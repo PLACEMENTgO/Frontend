@@ -3,21 +3,28 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
-export default function LoginPage() {
+export default function RegisterPage() {
+  const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const router = useRouter();
 
-  const login = async () => {
+  const register = async () => {
+    if (!fullName.trim()) return setError("Please enter your full name.");
+    if (!email.trim()) return setError("Please enter your email.");
+    if (password.length < 6) return setError("Password must be at least 6 characters.");
+    if (password !== confirmPassword) return setError("Passwords do not match.");
+
     try {
       setLoading(true);
       setError("");
-      const res = await fetch("http://localhost:8080/auth/login", {
+      const res = await fetch("http://localhost:8080/auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ fullName, email, password }),
       });
 
       if (!res.ok) throw new Error(await res.text());
@@ -32,6 +39,10 @@ export default function LoginPage() {
     }
   };
 
+  const strength = password.length === 0 ? 0 : password.length < 6 ? 1 : password.length < 10 ? 2 : 3;
+  const strengthLabel = ["", "Weak", "Fair", "Strong"];
+  const strengthColor = ["", "#ef4444", "#f59e0b", "#22c55e"];
+
   return (
     <>
       <style>{`
@@ -45,7 +56,6 @@ export default function LoginPage() {
           flex-direction: column;
         }
 
-        /* NAV */
         .nav {
           background: #1a1a2e;
           display: flex;
@@ -61,7 +71,6 @@ export default function LoginPage() {
           color: #fff;
           font-weight: 700;
           font-size: 16px;
-          text-decoration: none;
         }
         .nav-logo-icon {
           width: 32px;
@@ -79,7 +88,6 @@ export default function LoginPage() {
         }
         .nav-link {
           color: #94a3b8;
-          text-decoration: none;
           padding: 6px 14px;
           border-radius: 6px;
           font-size: 14px;
@@ -90,7 +98,6 @@ export default function LoginPage() {
         }
         .nav-link:hover { color: #fff; }
 
-        /* MAIN */
         .main {
           flex: 1;
           display: flex;
@@ -105,7 +112,7 @@ export default function LoginPage() {
           border: 1px solid #e2e8f0;
           padding: 44px 40px;
           width: 100%;
-          max-width: 420px;
+          max-width: 440px;
           box-shadow: 0 8px 32px rgba(0,0,0,0.07);
         }
 
@@ -147,6 +154,12 @@ export default function LoginPage() {
           margin-bottom: 32px;
         }
 
+        .name-row {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 14px;
+        }
+
         .form-group { margin-bottom: 18px; }
         .form-label {
           display: block;
@@ -172,23 +185,50 @@ export default function LoginPage() {
           background: #fff;
         }
         .form-input::placeholder { color: #94a3b8; }
+        .form-input.valid { border-color: #22c55e; }
+        .form-input.invalid { border-color: #ef4444; }
 
-        .forgot {
+        .strength-bar-wrap {
+          margin-top: 8px;
           display: flex;
-          justify-content: flex-end;
-          margin-top: -10px;
-          margin-bottom: 18px;
+          gap: 4px;
+          align-items: center;
         }
-        .forgot-link {
-          font-size: 12px;
-          color: #3b82f6;
-          cursor: pointer;
-          text-decoration: none;
-          font-weight: 500;
+        .strength-seg {
+          flex: 1;
+          height: 4px;
+          border-radius: 4px;
+          background: #e2e8f0;
+          transition: background 0.25s;
         }
-        .forgot-link:hover { text-decoration: underline; }
+        .strength-label {
+          font-size: 11px;
+          font-weight: 600;
+          margin-left: 6px;
+          min-width: 36px;
+        }
 
-        .btn-login {
+        .terms {
+          display: flex;
+          align-items: flex-start;
+          gap: 10px;
+          margin-bottom: 22px;
+          font-size: 13px;
+          color: #64748b;
+          line-height: 1.5;
+        }
+        .terms input[type="checkbox"] {
+          margin-top: 2px;
+          accent-color: #3b82f6;
+          width: 15px;
+          height: 15px;
+          flex-shrink: 0;
+          cursor: pointer;
+        }
+        .terms-link { color: #3b82f6; font-weight: 500; cursor: pointer; }
+        .terms-link:hover { text-decoration: underline; }
+
+        .btn-register {
           width: 100%;
           background: linear-gradient(135deg, #3b82f6, #2563eb);
           color: #fff;
@@ -205,12 +245,12 @@ export default function LoginPage() {
           justify-content: center;
           gap: 8px;
         }
-        .btn-login:hover:not(:disabled) {
+        .btn-register:hover:not(:disabled) {
           background: linear-gradient(135deg, #2563eb, #1d4ed8);
           box-shadow: 0 6px 18px rgba(59,130,246,0.45);
           transform: translateY(-1px);
         }
-        .btn-login:disabled { opacity: 0.7; cursor: not-allowed; transform: none; }
+        .btn-register:disabled { opacity: 0.7; cursor: not-allowed; transform: none; }
 
         .error-msg {
           color: #ef4444;
@@ -231,36 +271,21 @@ export default function LoginPage() {
           color: #94a3b8;
           font-size: 12px;
         }
-        .divider-line {
-          flex: 1;
-          height: 1px;
-          background: #e2e8f0;
-        }
+        .divider-line { flex: 1; height: 1px; background: #e2e8f0; }
 
-        .signup-row {
+        .login-row {
           text-align: center;
           font-size: 13px;
           color: #64748b;
           margin-top: 20px;
         }
-        .signup-link {
+        .login-link {
           color: #3b82f6;
           font-weight: 600;
           cursor: pointer;
           text-decoration: none;
         }
-        .signup-link:hover { text-decoration: underline; }
-
-        .spinner {
-          width: 15px;
-          height: 15px;
-          border: 2px solid rgba(255,255,255,0.4);
-          border-top-color: #fff;
-          border-radius: 50%;
-          animation: spin 0.6s linear infinite;
-          display: inline-block;
-        }
-        @keyframes spin { to { transform: rotate(360deg); } }
+        .login-link:hover { text-decoration: underline; }
 
         .badge-row {
           display: flex;
@@ -275,12 +300,18 @@ export default function LoginPage() {
           font-size: 11.5px;
           color: #64748b;
         }
-        .badge-dot {
-          width: 6px;
-          height: 6px;
+        .badge-dot { width: 6px; height: 6px; border-radius: 50%; background: #22c55e; }
+
+        .spinner {
+          width: 15px;
+          height: 15px;
+          border: 2px solid rgba(255,255,255,0.4);
+          border-top-color: #fff;
           border-radius: 50%;
-          background: #22c55e;
+          animation: spin 0.6s linear infinite;
+          display: inline-block;
         }
+        @keyframes spin { to { transform: rotate(360deg); } }
       `}</style>
 
       <div className="page">
@@ -309,58 +340,114 @@ export default function LoginPage() {
               </div>
             </div>
 
-            <h1 className="card-title">Welcome back</h1>
-            <p className="card-subtitle">Sign in to your account to continue</p>
+            <h1 className="card-title">Create your account</h1>
+            <p className="card-subtitle">Start optimizing your resume with AI — it's free</p>
 
+            {/* Full Name */}
+            <div className="form-group">
+              <label className="form-label">Full Name</label>
+              <input
+                className={`form-input${fullName.trim().length > 1 ? " valid" : ""}`}
+                type="text"
+                placeholder="Alex Johnson"
+                value={fullName}
+                onChange={(e) => setFullName(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && register()}
+              />
+            </div>
+
+            {/* Email */}
             <div className="form-group">
               <label className="form-label">Email address</label>
               <input
-                className="form-input"
+                className={`form-input${email.includes("@") && email.includes(".") ? " valid" : ""}`}
                 type="email"
                 placeholder="you@example.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && login()}
+                onKeyDown={(e) => e.key === "Enter" && register()}
               />
             </div>
 
+            {/* Password */}
             <div className="form-group">
               <label className="form-label">Password</label>
               <input
                 className="form-input"
                 type="password"
-                placeholder="••••••••"
+                placeholder="Min. 6 characters"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && login()}
+                onKeyDown={(e) => e.key === "Enter" && register()}
+              />
+              {password.length > 0 && (
+                <div className="strength-bar-wrap">
+                  {[1, 2, 3].map((i) => (
+                    <div
+                      key={i}
+                      className="strength-seg"
+                      style={{ background: strength >= i ? strengthColor[strength] : "#e2e8f0" }}
+                    />
+                  ))}
+                  <span className="strength-label" style={{ color: strengthColor[strength] }}>
+                    {strengthLabel[strength]}
+                  </span>
+                </div>
+              )}
+            </div>
+
+            {/* Confirm Password */}
+            <div className="form-group">
+              <label className="form-label">Confirm Password</label>
+              <input
+                className={`form-input${
+                  confirmPassword.length > 0
+                    ? confirmPassword === password
+                      ? " valid"
+                      : " invalid"
+                    : ""
+                }`}
+                type="password"
+                placeholder="Re-enter your password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && register()}
               />
             </div>
 
-            <div className="forgot">
-              <a className="forgot-link" href="#">Forgot password?</a>
+            {/* Terms */}
+            <div className="terms">
+              <input type="checkbox" id="terms" />
+              <label htmlFor="terms">
+                I agree to the <span className="terms-link">Terms of Service</span> and{" "}
+                <span className="terms-link">Privacy Policy</span>
+              </label>
             </div>
 
-            <button className="btn-login" onClick={login} disabled={loading}>
-              {loading ? <><span className="spinner" /> Signing in...</> : "Sign In"}
+            <button className="btn-register" onClick={register} disabled={loading}>
+              {loading ? (
+                <><span className="spinner" /> Creating account...</>
+              ) : (
+                <>✨ Create Free Account</>
+              )}
             </button>
 
             {error && <div className="error-msg">⚠ {error}</div>}
 
             <div className="divider">
               <div className="divider-line" />
-              <span>or</span>
+              <span>already have an account?</span>
               <div className="divider-line" />
             </div>
 
-            <div className="signup-row">
-              Don't have an account?{" "}
-              <a className="signup-link" href="/register">Create one free</a>
+            <div className="login-row">
+              <a className="login-link" href="/login">Sign in instead</a>
             </div>
 
             <div className="badge-row">
               <span className="badge"><span className="badge-dot" /> AI-Powered</span>
               <span className="badge"><span className="badge-dot" /> ATS Optimized</span>
-              <span className="badge"><span className="badge-dot" /> Secure</span>
+              <span className="badge"><span className="badge-dot" /> Free to Start</span>
             </div>
           </div>
         </div>
