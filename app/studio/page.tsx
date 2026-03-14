@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import Navbar from "../component/Navbar";
 import {
   Upload,
   FileText,
@@ -20,36 +21,8 @@ export default function ResumeStudio() {
   return (
     <div className="min-h-screen bg-[#F8FAFC] text-[#0F172A] font-sans">
       {/* --- TOP NAVIGATION --- */}
-      <nav className="h-16 bg-white border-b border-slate-200 px-8 flex items-center justify-between sticky top-0 z-50">
-        <div className="flex items-center gap-8">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
-              <FileText size={18} className="text-white" />
-            </div>
-            <span className="text-lg font-bold tracking-tight">
-              Resume Studio
-            </span>
-          </div>
-
-          <div className="hidden md:flex items-center gap-6">
-            <NavTab label="Dashboard" />
-            <NavTab label="Optimizer" active />
-            <NavTab label="Templates" />
-            <NavTab label="Career Insights" />
-          </div>
-        </div>
-
-        <div className="flex items-center gap-4">
-          <button className="bg-blue-50 text-blue-600 px-4 py-2 rounded-lg text-sm font-bold hover:bg-blue-100 transition-colors">
-            Upgrade Pro
-          </button>
-          <div className="w-9 h-9 rounded-full bg-orange-100 border border-orange-200 overflow-hidden">
-            <img
-              src="https://api.dicebear.com/7.x/avataaars/svg?seed=Alex"
-              alt="Profile"
-            />
-          </div>
-        </div>
+      <nav className="bg-white border-b border-slate-200 sticky top-0 z-50">
+        <Navbar />
       </nav>
 
       <main className="max-w-7xl mx-auto p-8">

@@ -1,13 +1,71 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useAuth } from "../context/AuthContext";
+
 // ─── Types ───────────────────────────────────────────────────────────────────
 
-type StatusType = "applied" | "pending" | "interviewing" | "offer" | "rejected";
+type BackendStatus = "APPLIED" | "INTERVIEW" | "REJECTED" | "OFFER";
+type StatusType = "applied" | "interviewing" | "offer" | "rejected";
 type FilterType = "all" | StatusType;
 
+interface ApiApplication {
+  id: string;
+  company: string;
+  role: string;
+  jobLink?: string;
+  appliedDate?: string;
+  status: BackendStatus;
+  createdAt: string;
+}
+
+const STATUS_MAP: Record<BackendStatus, StatusType> = {
+  APPLIED: "applied",
+  INTERVIEW: "interviewing",
+  REJECTED: "rejected",
+  OFFER: "offer",
+};
+
+const LOGO_COLORS = [
+  "#4285f4", "#635bff", "#ff5a5f", "#ff6900", "#00b4d8",
+  "#000000", "#0077b5", "#e91e63", "#009688", "#ff9800",
+];
+
+function getLogoColor(company: string): string {
+  let hash = 0;
+  for (let i = 0; i < company.length; i++) {
+    hash = company.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  return LOGO_COLORS[Math.abs(hash) % LOGO_COLORS.length];
+}
+
+function timeAgo(dateStr: string): string {
+  const date = new Date(dateStr);
+  const now = new Date();
+  const diffMins = Math.floor((now.getTime() - date.getTime()) / 60000);
+  const diffHours = Math.floor(diffMins / 60);
+  const diffDays = Math.floor(diffHours / 24);
+  if (diffMins < 60) return `${diffMins}m ago`;
+  if (diffHours < 24) return `${diffHours}h ago`;
+  if (diffDays < 7) return `${diffDays}d ago`;
+  return `${Math.floor(diffDays / 7)}w ago`;
+}
+
+function mapApiApp(app: ApiApplication): Application {
+  return {
+    id: app.id,
+    company: app.company,
+    logo: app.company.slice(0, 2).toUpperCase(),
+    logoColor: getLogoColor(app.company),
+    position: app.role,
+    status: STATUS_MAP[app.status] || "applied",
+    activity: timeAgo(app.createdAt),
+  };
+}
+
 interface Application {
-  id: number;
+  id: string;
   company: string;
   logo: string;
   logoColor: string;
@@ -16,22 +74,12 @@ interface Application {
   activity: string;
 }
 
-// ─── Data ────────────────────────────────────────────────────────────────────
-
-const APPLICATIONS: Application[] = [
-  { id: 1, company: "Google", logo: "G", logoColor: "#4285f4", position: "Software Engineer Intern", status: "interviewing", activity: "2h ago" },
-  { id: 2, company: "Stripe", logo: "S", logoColor: "#635bff", position: "Product Management Intern", status: "applied", activity: "1d ago" },
-  { id: 3, company: "Airbnb", logo: "A", logoColor: "#ff5a5f", position: "Frontend Developer", status: "offer", activity: "3d ago" },
-  { id: 4, company: "Meta", logo: "M", logoColor: "#ff6900", position: "Backend Intern", status: "rejected", activity: "5d ago" },
-  { id: 5, company: "Netflix", logo: "N", logoColor: "#00b4d8", position: "Data Science Intern", status: "pending", activity: "6d ago" },
-  { id: 6, company: "X (Twitter)", logo: "X", logoColor: "#000000", position: "iOS Developer", status: "applied", activity: "1w ago" },
-  { id: 7, company: "LinkedIn", logo: "Li", logoColor: "#0077b5", position: "UX Designer", status: "interviewing", activity: "1w ago" },
-];
+// ─── Data ─────────────────────────────────────────────────────────────────────
+// (Applications are loaded from the backend API)
 
 const FILTERS: { label: string; value: FilterType }[] = [
   { label: "All", value: "all" },
   { label: "Applied", value: "applied" },
-  { label: "Pending", value: "pending" },
   { label: "Interviewing", value: "interviewing" },
   { label: "Offer", value: "offer" },
   { label: "Rejected", value: "rejected" },
@@ -41,7 +89,6 @@ const FILTERS: { label: string; value: FilterType }[] = [
 
 const STATUS_CONFIG: Record<StatusType, { label: string; bg: string; text: string; dot: string }> = {
   applied:      { label: "Applied",      bg: "#e7f5ff", text: "#1971c2", dot: "#1971c2" },
-  pending:      { label: "Pending",      bg: "#f3f0ff", text: "#7048e8", dot: "#7048e8" },
   interviewing: { label: "Interviewing", bg: "#fff4e6", text: "#e67700", dot: "#e67700" },
   offer:        { label: "Offer",        bg: "#ebfbee", text: "#2f9e44", dot: "#2f9e44" },
   rejected:     { label: "Rejected",     bg: "#fff5f5", text: "#c92a2a", dot: "#c92a2a" },
@@ -50,7 +97,6 @@ const STATUS_CONFIG: Record<StatusType, { label: string; bg: string; text: strin
 const FILTER_ACTIVE_COLORS: Record<FilterType, string> = {
   all:          "#1a1d2e",
   applied:      "#1971c2",
-  pending:      "#7048e8",
   interviewing: "#e67700",
   offer:        "#2f9e44",
   rejected:     "#c92a2a",
@@ -218,12 +264,92 @@ const CheckIcon = () => (
 
 // ─── Main Dashboard Component ─────────────────────────────────────────────────
 
+const PlusIcon = () => (
+  <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+  </svg>
+);
+
 export default function Dashboard() {
+  const router = useRouter();
+  const { isLoggedIn, logout, userEmail } = useAuth();
+  const [applications, setApplications] = useState<Application[]>([]);
+  const [loadingData, setLoadingData] = useState(true);
   const [activeFilter, setActiveFilter] = useState<FilterType>("all");
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [addForm, setAddForm] = useState({ company: "", role: "", jobLink: "", appliedDate: "" });
+  const [addLoading, setAddLoading] = useState(false);
+  const [addError, setAddError] = useState("");
+
+  const userInitials = userEmail ? userEmail.slice(0, 2).toUpperCase() : "U";
+  const greeting = userEmail ? userEmail.split("@")[0] : "there";
+
+  useEffect(() => {
+    if (!isLoggedIn) {
+      router.push("/login");
+      return;
+    }
+    fetchApplications();
+  }, [isLoggedIn]);
+
+  const fetchApplications = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      const res = await fetch("http://localhost:8080/applications", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!res.ok) throw new Error("Failed to fetch");
+      const data: ApiApplication[] = await res.json();
+      setApplications(data.map(mapApiApp));
+    } catch (e) {
+      console.error("Failed to load applications:", e);
+    } finally {
+      setLoadingData(false);
+    }
+  };
+
+  const addApplication = async () => {
+    if (!addForm.company.trim() || !addForm.role.trim()) {
+      setAddError("Company and role are required.");
+      return;
+    }
+    setAddLoading(true);
+    setAddError("");
+    try {
+      const token = localStorage.getItem("token");
+      const res = await fetch("http://localhost:8080/applications", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({
+          company: addForm.company,
+          role: addForm.role,
+          jobLink: addForm.jobLink || null,
+          appliedDate: addForm.appliedDate || null,
+        }),
+      });
+      if (!res.ok) throw new Error("Failed to add");
+      const newApp: ApiApplication = await res.json();
+      setApplications(prev => [mapApiApp(newApp), ...prev]);
+      setAddForm({ company: "", role: "", jobLink: "", appliedDate: "" });
+      setShowAddModal(false);
+    } catch (e: any) {
+      setAddError(e.message);
+    } finally {
+      setAddLoading(false);
+    }
+  };
 
   const filtered = activeFilter === "all"
-    ? APPLICATIONS
-    : APPLICATIONS.filter(a => a.status === activeFilter);
+    ? applications
+    : applications.filter(a => a.status === activeFilter);
+
+  const stats = {
+    total: applications.length,
+    interviewing: applications.filter(a => a.status === "interviewing").length,
+    offers: applications.filter(a => a.status === "offer").length,
+  };
+
+  if (!isLoggedIn) return null;
 
   return (
     <div style={{ display: "flex", minHeight: "100vh", background: "#f4f6fb", fontFamily: "'DM Sans', sans-serif", color: "#1a1d2e" }}>
@@ -235,44 +361,49 @@ export default function Dashboard() {
         position: "fixed", height: "100vh", zIndex: 10,
       }}>
         {/* Logo */}
-       <Link href="/" className="flex items-center gap-2">
-        <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "0 20px 28px", borderBottom: "1px solid #e8ecf4" }}>
-          <div style={{
-            width: 36, height: 36, borderRadius: 10,
-            background: "linear-gradient(135deg, #3b5bdb, #748ffc)",
-            display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18,
-          }}>🚀</div>
-          <span style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontWeight: 800, fontSize: 15 }}>PlacementGo</span>
-        </div>
+        <Link href="/" style={{ textDecoration: "none" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "0 20px 28px", borderBottom: "1px solid #e8ecf4" }}>
+            <div style={{
+              width: 36, height: 36, borderRadius: 10,
+              background: "linear-gradient(135deg, #3b5bdb, #748ffc)",
+              display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18,
+            }}>🚀</div>
+            <span style={{ fontWeight: 800, fontSize: 15 }}>PlacementGo</span>
+          </div>
         </Link>
 
         {/* Nav */}
         <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: "1.2px", textTransform: "uppercase", color: "#7b8299", padding: "20px 20px 8px" }}>Menu</span>
-       <NavItem icon={<DashboardIcon />} label="Dashboard" href="/dashboard" active />
-<NavItem icon={<DocIcon />} label="Resume Optimizer" href="/resumeoptimizer" />
-<NavItem icon={<UsersIcon />} label="Referral Finder" href="/referalfinder" />
-<NavItem icon={<CalendarIcon />} label="Interview Guide" href="/interviewguide" />
+        <NavItem icon={<DashboardIcon />} label="Dashboard" href="/dashboard" active />
+        <NavItem icon={<DocIcon />} label="Resume Optimizer" href="/resumeoptimizer" />
+        <NavItem icon={<UsersIcon />} label="Referral Finder" href="/referalfinder" />
+        <NavItem icon={<CalendarIcon />} label="Interview Guide" href="/interview" />
 
         <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: "1.2px", textTransform: "uppercase", color: "#7b8299", padding: "20px 20px 8px" }}>Account</span>
-        <NavItem icon={<SettingsIcon />} label="Settings" href="/login" />
+        <NavItem icon={<SettingsIcon />} label="Settings" href="/settings" />
 
-        {/* User */}
+        {/* User + Logout */}
         <div style={{ marginTop: "auto", padding: 16, borderTop: "1px solid #e8ecf4" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 10, padding: 10, borderRadius: 10, cursor: "pointer" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 10, padding: 10, borderRadius: 10 }}>
             <div style={{
               width: 36, height: 36, borderRadius: "50%",
               background: "linear-gradient(135deg, #3b5bdb, #748ffc)",
               display: "flex", alignItems: "center", justifyContent: "center",
               color: "white", fontWeight: 700, fontSize: 13, flexShrink: 0,
-            }}>AJ</div>
-            <div>
-              <div style={{ fontSize: 13, fontWeight: 600 }}>Alex Johnson</div>
+            }}>{userInitials}</div>
+            <div style={{ overflow: "hidden" }}>
+              <div style={{ fontSize: 12, fontWeight: 600, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                {userEmail || "User"}
+              </div>
               <div style={{ fontSize: 11, color: "#7b8299" }}>Student Plan</div>
             </div>
           </div>
-          <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "8px 10px", color: "#e03131", fontSize: 13, fontWeight: 500, cursor: "pointer", borderRadius: 8 }}>
+          <button
+            onClick={logout}
+            style={{ display: "flex", alignItems: "center", gap: 8, padding: "8px 10px", color: "#e03131", fontSize: 13, fontWeight: 500, cursor: "pointer", borderRadius: 8, background: "none", border: "none", width: "100%", fontFamily: "inherit" }}
+          >
             <LogoutIcon /> Logout
-          </div>
+          </button>
         </div>
       </aside>
 
@@ -289,27 +420,36 @@ export default function Dashboard() {
             <SearchIcon /> Search applications, companies...
           </div>
           <div style={{ marginLeft: "auto", display: "flex", gap: 8 }}>
-            {[<BellIcon />, <HelpIcon />].map((icon, i) => (
-              <div key={i} style={{
-                width: 38, height: 38, borderRadius: 10, background: "white",
-                border: "1px solid #e8ecf4", display: "flex", alignItems: "center",
-                justifyContent: "center", cursor: "pointer", color: "#7b8299",
-              }}>{icon}</div>
-            ))}
+            <button
+              onClick={() => setShowAddModal(true)}
+              style={{
+                display: "flex", alignItems: "center", gap: 6,
+                background: "#3b5bdb", color: "white", border: "none",
+                borderRadius: 10, padding: "8px 16px", fontSize: 13, fontWeight: 600,
+                cursor: "pointer", fontFamily: "inherit",
+              }}
+            >
+              <PlusIcon /> Add Application
+            </button>
+            <div style={{
+              width: 38, height: 38, borderRadius: 10, background: "white",
+              border: "1px solid #e8ecf4", display: "flex", alignItems: "center",
+              justifyContent: "center", color: "#7b8299",
+            }}><BellIcon /></div>
           </div>
         </div>
 
         {/* Greeting */}
         <div style={{ marginBottom: 4 }}>
-          <h1 style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 24, fontWeight: 800 }}>Good morning, Alex 👋</h1>
+          <h1 style={{ fontSize: 24, fontWeight: 800 }}>Good morning, {greeting} 👋</h1>
           <p style={{ fontSize: 13.5, color: "#7b8299", marginTop: 4 }}>Here's a summary of your career progress today.</p>
         </div>
 
         {/* Stat Cards */}
         <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 16, margin: "24px 0" }}>
-          <StatCard title="Total Applications" icon="📋" iconBg="#e7f5ff" value={42} badge="↑12%" badgeType="up" sub="vs. last 30 days" />
-          <StatCard title="Interviewing" icon="🎥" iconBg="#ebfbee" value={8} badge="↑25%" badgeType="up" sub="Currently active pipelines" />
-          <StatCard title="Offers Received" icon="🏆" iconBg="#f3f0ff" value={2} badge="0%" badgeType="neutral" sub="2 new offers pending review" />
+          <StatCard title="Total Applications" icon="📋" iconBg="#e7f5ff" value={stats.total} badge={stats.total > 0 ? "active" : "none yet"} badgeType={stats.total > 0 ? "up" : "neutral"} sub="All tracked applications" />
+          <StatCard title="Interviewing" icon="🎥" iconBg="#ebfbee" value={stats.interviewing} badge={stats.interviewing > 0 ? "active" : "none"} badgeType={stats.interviewing > 0 ? "up" : "neutral"} sub="Currently active pipelines" />
+          <StatCard title="Offers Received" icon="🏆" iconBg="#f3f0ff" value={stats.offers} badge={stats.offers > 0 ? "🎉" : "keep going"} badgeType={stats.offers > 0 ? "up" : "neutral"} sub="Offers in your pipeline" />
         </div>
 
         {/* Two Col Layout */}
@@ -318,31 +458,46 @@ export default function Dashboard() {
           {/* LEFT */}
           <div>
             {/* Quick Actions */}
-                <div style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 15, fontWeight: 700, marginBottom: 14 }}>Quick Actions</div>
+            <div style={{ fontSize: 15, fontWeight: 700, marginBottom: 14 }}>Quick Actions</div>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 12, marginBottom: 24 }}>
               {[
-                { icon: <UploadIcon />,   label: "Upload CV",      href: "/resumeoptimizer" },
-                { icon: <CheckIcon />,    label: "Log App",        href: "/applications/new" },
-                { icon: <UsersIcon />,    label: "Find Referrals", href: "/referalfinder" },
-                { icon: <CalendarIcon />, label: "Schedule",       href: "/interview" },
-              ].map((qa) => (
-                <Link key={qa.label} href={qa.href} style={{
-                  display: "flex", flexDirection: "column", alignItems: "center", gap: 8,
-                  background: "white", border: "1px solid #e8ecf4", borderRadius: 12,
-                  padding: "16px 10px", cursor: "pointer", fontSize: 12.5, fontWeight: 500,
-                  color: "#1a1d2e", textDecoration: "none", fontFamily: "inherit",
-                }}>
-                  {qa.icon}{qa.label}
-                </Link>
-              ))}
+                { icon: <UploadIcon />, label: "Upload CV", href: "/resumeoptimizer" },
+                { icon: <CheckIcon />, label: "Log App", onClick: () => setShowAddModal(true) },
+                { icon: <UsersIcon />, label: "Find Referrals", href: "/referalfinder" },
+                { icon: <CalendarIcon />, label: "Interview Prep", href: "/interview" },
+              ].map((qa) =>
+                "href" in qa ? (
+                  <Link key={qa.label} href={qa.href!} style={{
+                    display: "flex", flexDirection: "column", alignItems: "center", gap: 8,
+                    background: "white", border: "1px solid #e8ecf4", borderRadius: 12,
+                    padding: "16px 10px", cursor: "pointer", fontSize: 12.5, fontWeight: 500,
+                    color: "#1a1d2e", textDecoration: "none", fontFamily: "inherit",
+                  }}>
+                    {qa.icon}{qa.label}
+                  </Link>
+                ) : (
+                  <button key={qa.label} onClick={qa.onClick} style={{
+                    display: "flex", flexDirection: "column", alignItems: "center", gap: 8,
+                    background: "white", border: "1px solid #e8ecf4", borderRadius: 12,
+                    padding: "16px 10px", cursor: "pointer", fontSize: 12.5, fontWeight: 500,
+                    color: "#1a1d2e", fontFamily: "inherit",
+                  }}>
+                    {qa.icon}{qa.label}
+                  </button>
+                )
+              )}
             </div>
-
 
             {/* Pipeline Card */}
             <div style={{ background: "white", border: "1px solid #e8ecf4", borderRadius: 14, overflow: "hidden" }}>
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "18px 20px", borderBottom: "1px solid #e8ecf4" }}>
-                <span style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 15, fontWeight: 700 }}>Active Pipeline</span>
-                <span style={{ fontSize: 13, color: "#3b5bdb", fontWeight: 600, cursor: "pointer" }}>View all</span>
+                <span style={{ fontSize: 15, fontWeight: 700 }}>Active Pipeline</span>
+                <button
+                  onClick={() => setShowAddModal(true)}
+                  style={{ fontSize: 13, color: "#3b5bdb", fontWeight: 600, cursor: "pointer", background: "none", border: "none", fontFamily: "inherit" }}
+                >
+                  + Add new
+                </button>
               </div>
 
               {/* Status Filter Chips */}
@@ -369,7 +524,7 @@ export default function Dashboard() {
                           marginLeft: 5, background: isActive ? "rgba(255,255,255,0.25)" : "#e8ecf4",
                           padding: "1px 6px", borderRadius: 10, fontSize: 10,
                         }}>
-                          {APPLICATIONS.filter(a => a.status === f.value).length}
+                          {applications.filter(a => a.status === f.value).length}
                         </span>
                       )}
                     </button>
@@ -379,15 +534,21 @@ export default function Dashboard() {
 
               {/* Table */}
               <div style={{ overflowX: "auto" }}>
-                {filtered.length === 0 ? (
+                {loadingData ? (
                   <div style={{ textAlign: "center", padding: "40px 20px", color: "#7b8299", fontSize: 13.5 }}>
-                    No applications found for this status.
+                    Loading your applications...
+                  </div>
+                ) : filtered.length === 0 ? (
+                  <div style={{ textAlign: "center", padding: "40px 20px", color: "#7b8299", fontSize: 13.5 }}>
+                    {applications.length === 0
+                      ? "No applications yet — add your first one above!"
+                      : "No applications found for this status."}
                   </div>
                 ) : (
                   <table style={{ width: "100%", borderCollapse: "collapse" }}>
                     <thead>
                       <tr style={{ background: "#fafbfd", borderBottom: "1px solid #e8ecf4" }}>
-                        {["Company", "Position", "Status", "Activity"].map(h => (
+                        {["Company", "Position", "Status", "Added"].map(h => (
                           <th key={h} style={{ textAlign: "left", fontSize: 11, fontWeight: 700, letterSpacing: "0.8px", textTransform: "uppercase", color: "#7b8299", padding: "10px 20px" }}>
                             {h}
                           </th>
@@ -422,53 +583,115 @@ export default function Dashboard() {
           {/* RIGHT PANEL */}
           <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
 
-            {/* Recent Activity */}
+            {/* Status Breakdown */}
             <div style={{ background: "white", border: "1px solid #e8ecf4", borderRadius: 14, padding: 18 }}>
-              <div style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 15, fontWeight: 700, marginBottom: 4 }}>Recent Activity</div>
-              {[
-                { dot: "✏️", dotBg: "#e7f5ff", text: <>You updated your <b>Software Engineer</b> resume.</>, time: "Today at 10:42 AM" },
-                { dot: "✅", dotBg: "#ebfbee", text: <><b>Application to Microsoft</b> was successful.</>, time: "Yesterday at 4:15 PM" },
-                { dot: "🔗", dotBg: "#f3f0ff", text: <>Referral request sent to <b>Sarah Miller at Google.</b></>, time: "Oct 24, 2023" },
-              ].map((item, i, arr) => (
-                <div key={i} style={{ display: "flex", gap: 12, padding: "10px 0", borderBottom: i < arr.length - 1 ? "1px solid #e8ecf4" : "none" }}>
-                  <div style={{ width: 32, height: 32, borderRadius: "50%", background: item.dotBg, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, fontSize: 14 }}>
-                    {item.dot}
+              <div style={{ fontSize: 15, fontWeight: 700, marginBottom: 14 }}>Status Breakdown</div>
+              {FILTERS.filter(f => f.value !== "all").map(f => {
+                const count = applications.filter(a => a.status === f.value).length;
+                const pct = applications.length > 0 ? Math.round((count / applications.length) * 100) : 0;
+                const color = FILTER_ACTIVE_COLORS[f.value];
+                return (
+                  <div key={f.value} style={{ marginBottom: 12 }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12.5, fontWeight: 500, marginBottom: 4 }}>
+                      <span>{f.label}</span>
+                      <span style={{ color: "#7b8299" }}>{count} ({pct}%)</span>
+                    </div>
+                    <div style={{ height: 6, background: "#f4f6fb", borderRadius: 10, overflow: "hidden" }}>
+                      <div style={{ height: "100%", width: `${pct}%`, background: color, borderRadius: 10, transition: "width 0.4s" }} />
+                    </div>
                   </div>
-                  <div>
-                    <div style={{ fontSize: 12.5, fontWeight: 500, color: "#1a1d2e", lineHeight: 1.4 }}>{item.text}</div>
-                    <div style={{ fontSize: 11, color: "#7b8299", marginTop: 3 }}>{item.time}</div>
-                  </div>
+                );
+              })}
+              {applications.length === 0 && (
+                <div style={{ fontSize: 12, color: "#7b8299", textAlign: "center", paddingTop: 4 }}>
+                  Add applications to see your breakdown
                 </div>
-              ))}
-              <button style={{ width: "100%", padding: 8, textAlign: "center", fontSize: 13, color: "#3b5bdb", fontWeight: 600, cursor: "pointer", border: "none", background: "none", marginTop: 6, fontFamily: "inherit" }}>
-                Load More
-              </button>
+              )}
             </div>
 
             {/* Monthly Goal */}
             <div style={{ background: "linear-gradient(135deg, #3b5bdb, #4c6ef5, #748ffc)", borderRadius: 14, padding: 20, color: "white" }}>
-              <div style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 15, fontWeight: 700, marginBottom: 6 }}>Monthly Goal</div>
+              <div style={{ fontSize: 15, fontWeight: 700, marginBottom: 6 }}>Goal: 10 Applications</div>
               <div style={{ fontSize: 12.5, opacity: 0.85, lineHeight: 1.5, marginBottom: 16 }}>
-                Complete 10 interview prep modules to earn your certification.
+                Track your progress towards your monthly application target.
               </div>
               <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12, fontWeight: 600, marginBottom: 6 }}>
-                <span>Progress</span><span>70%</span>
+                <span>Progress</span>
+                <span>{Math.min(100, Math.round((stats.total / 10) * 100))}%</span>
               </div>
               <div style={{ height: 6, background: "rgba(255,255,255,0.25)", borderRadius: 10, overflow: "hidden", marginBottom: 14 }}>
-                <div style={{ height: "100%", width: "70%", background: "white", borderRadius: 10 }} />
+                <div style={{ height: "100%", width: `${Math.min(100, (stats.total / 10) * 100)}%`, background: "white", borderRadius: 10 }} />
               </div>
-              <button style={{
-                width: "100%", padding: 10, background: "white", color: "#3b5bdb",
-                border: "none", borderRadius: 10, fontFamily: "'Plus Jakarta Sans', sans-serif",
-                fontSize: 13, fontWeight: 700, cursor: "pointer",
-              }}>
-                Continue Learning
-              </button>
+              <div style={{ fontSize: 12, opacity: 0.8 }}>{stats.total} of 10 applications</div>
             </div>
 
           </div>
         </div>
       </main>
+
+      {/* ── ADD APPLICATION MODAL ── */}
+      {showAddModal && (
+        <div
+          onClick={(e) => { if (e.target === e.currentTarget) { setShowAddModal(false); setAddError(""); } }}
+          style={{
+            position: "fixed", inset: 0, background: "rgba(0,0,0,0.4)",
+            display: "flex", alignItems: "center", justifyContent: "center", zIndex: 100,
+          }}
+        >
+          <div style={{
+            background: "white", borderRadius: 16, padding: 28, width: 440, maxWidth: "90vw",
+            boxShadow: "0 20px 60px rgba(0,0,0,0.15)",
+          }}>
+            <div style={{ fontSize: 17, fontWeight: 700, marginBottom: 20 }}>Log New Application</div>
+
+            {addError && (
+              <div style={{ background: "#fff5f5", border: "1px solid #ffd0d0", borderRadius: 8, padding: "10px 14px", fontSize: 13, color: "#c92a2a", marginBottom: 16 }}>
+                {addError}
+              </div>
+            )}
+
+            <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+              {[
+                { label: "Company *", key: "company", placeholder: "e.g. Google", type: "text" },
+                { label: "Role *", key: "role", placeholder: "e.g. Software Engineer Intern", type: "text" },
+                { label: "Job Link", key: "jobLink", placeholder: "https://...", type: "url" },
+                { label: "Applied Date", key: "appliedDate", placeholder: "", type: "date" },
+              ].map(field => (
+                <div key={field.key}>
+                  <label style={{ display: "block", fontSize: 12, fontWeight: 600, color: "#4a4f6b", marginBottom: 6 }}>{field.label}</label>
+                  <input
+                    type={field.type}
+                    placeholder={field.placeholder}
+                    value={(addForm as Record<string, string>)[field.key]}
+                    onChange={e => setAddForm(prev => ({ ...prev, [field.key]: e.target.value }))}
+                    style={{
+                      width: "100%", padding: "10px 14px", fontSize: 13, border: "1.5px solid #e8ecf4",
+                      borderRadius: 8, outline: "none", fontFamily: "inherit", boxSizing: "border-box",
+                      background: "white",
+                    }}
+                  />
+                </div>
+              ))}
+            </div>
+
+            <div style={{ display: "flex", gap: 10, marginTop: 22 }}>
+              <button
+                onClick={() => { setShowAddModal(false); setAddError(""); setAddForm({ company: "", role: "", jobLink: "", appliedDate: "" }); }}
+                style={{ flex: 1, padding: "11px 0", background: "#f4f6fb", border: "none", borderRadius: 10, fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={addApplication}
+                disabled={addLoading}
+                style={{ flex: 2, padding: "11px 0", background: "#3b5bdb", color: "white", border: "none", borderRadius: 10, fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "inherit", opacity: addLoading ? 0.7 : 1 }}
+              >
+                {addLoading ? "Saving..." : "Save Application"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

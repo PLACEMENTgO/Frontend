@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import Navbar from "../component/Navbar";
 import {
   Link as LinkIcon,
   Search,
@@ -27,36 +28,8 @@ export default function ReferralFinder() {
   return (
     <div className="min-h-screen bg-[#F8FAFC] text-[#0F172A] font-sans selection:bg-blue-100">
       {/* --- HEADER --- */}
-      <nav className="h-16 bg-white border-b border-slate-200 px-8 flex items-center justify-between sticky top-0 z-50">
-        <div className="flex items-center gap-8">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
-              <Linkedin size={18} className="text-white fill-current" />
-            </div>
-            <span className="text-lg font-bold tracking-tight">
-              Referral Finder
-            </span>
-          </div>
-          <div className="hidden md:flex items-center gap-6 text-sm font-semibold text-slate-500">
-            <button className="hover:text-blue-600">Dashboard</button>
-            <button className="text-blue-600 border-b-2 border-blue-600 py-5">
-              Referrals
-            </button>
-            <button className="hover:text-blue-600">Job Tracker</button>
-            <button className="hover:text-blue-600">Settings</button>
-          </div>
-        </div>
-        <div className="flex items-center gap-4">
-          <button className="bg-blue-600 text-white px-5 py-2 rounded-lg text-sm font-bold shadow-lg shadow-blue-200 hover:bg-blue-700 transition-all">
-            Upgrade Pro
-          </button>
-          <div className="w-9 h-9 rounded-full bg-slate-200 border border-white shadow-sm overflow-hidden">
-            <img
-              src="https://api.dicebear.com/7.x/avataaars/svg?seed=Alex"
-              alt="Profile"
-            />
-          </div>
-        </div>
+      <nav className="bg-white border-b border-slate-200 sticky top-0 z-50">
+        <Navbar />
       </nav>
 
       <main className="max-w-5xl mx-auto p-8">
