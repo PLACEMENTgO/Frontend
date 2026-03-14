@@ -2,10 +2,12 @@
 
 import { useState } from "react";
 import { apiFetch } from "@/lib/api";
+import Navbar from "../component/Navbar";
 
 export default function UploadResumePage() {
   const [file, setFile] = useState<File | null>(null);
   const [jobDescription, setJobDescription] = useState("");
+  const [template, setTemplate] = useState("classic");
   const [loading, setLoading] = useState(false);
   const [pdfBase64, setPdfBase64] = useState<string | null>(null);
   const [latex, setLatex] = useState<string | null>(null);
@@ -18,6 +20,7 @@ export default function UploadResumePage() {
     const formData = new FormData();
     formData.append("file", file);
     formData.append("jobDescription", jobDescription);
+    formData.append("template", template);
 
     try {
       setLoading(true);
@@ -54,6 +57,9 @@ export default function UploadResumePage() {
 
   return (
     <div className="min-h-screen bg-slate-100">
+      <div className="bg-white border-b border-slate-200">
+        <Navbar />
+      </div>
       <div className="max-w-6xl mx-auto px-6 py-10">
 
         {/* HEADER */}
@@ -137,6 +143,88 @@ export default function UploadResumePage() {
               placeholder="Paste the full job requirements here to identify missing keywords and skills..."
               className="w-full h-[calc(100%-3rem)] min-h-[200px] border border-slate-200 rounded-lg p-3 text-sm text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-400 resize-none"
             />
+          </div>
+        </div>
+
+        {/* Template Selector */}
+        <div className="bg-white rounded-xl border border-slate-200 p-6 mb-6">
+          <div className="flex items-center gap-3 mb-4">
+            <span className="text-blue-500">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/>
+                <rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/>
+              </svg>
+            </span>
+            <span className="font-semibold text-slate-900 text-sm">3. Choose a Template</span>
+          </div>
+          <div className="grid grid-cols-3 gap-4">
+            {/* Classic */}
+            <button
+              type="button"
+              onClick={() => setTemplate("classic")}
+              className={`rounded-xl border-2 p-4 text-left transition-all ${template === "classic" ? "border-blue-500 bg-blue-50" : "border-slate-200 hover:border-blue-300"}`}
+            >
+              <div className="w-full h-28 bg-white border border-slate-200 rounded-lg mb-3 flex flex-col gap-1 p-2 overflow-hidden">
+                <div className="h-2 bg-slate-800 rounded w-1/2 mx-auto" />
+                <div className="h-px bg-slate-300 mt-1" />
+                <div className="h-1.5 bg-slate-400 rounded w-3/4 mt-1" />
+                <div className="h-1 bg-slate-200 rounded w-full" />
+                <div className="h-1 bg-slate-200 rounded w-5/6" />
+                <div className="h-px bg-slate-300 mt-1" />
+                <div className="h-1.5 bg-slate-400 rounded w-2/3 mt-1" />
+                <div className="h-1 bg-slate-200 rounded w-full" />
+                <div className="h-1 bg-slate-200 rounded w-4/6" />
+              </div>
+              <p className="font-semibold text-slate-800 text-sm">Classic</p>
+              <p className="text-xs text-slate-500 mt-0.5">Clean grey accents, ATS-friendly</p>
+              {template === "classic" && <span className="text-xs text-blue-600 font-semibold mt-1 block">✓ Selected</span>}
+            </button>
+
+            {/* Modern */}
+            <button
+              type="button"
+              onClick={() => setTemplate("modern")}
+              className={`rounded-xl border-2 p-4 text-left transition-all ${template === "modern" ? "border-blue-500 bg-blue-50" : "border-slate-200 hover:border-blue-300"}`}
+            >
+              <div className="w-full h-28 bg-white border border-slate-200 rounded-lg mb-3 flex flex-col gap-1 p-2 overflow-hidden">
+                <div className="h-2 bg-blue-600 rounded w-1/2 mx-auto" />
+                <div className="h-px bg-blue-400 mt-1" />
+                <div className="h-1.5 bg-blue-500 rounded w-3/4 mt-1" />
+                <div className="h-1 bg-slate-200 rounded w-full" />
+                <div className="h-1 bg-slate-200 rounded w-5/6" />
+                <div className="h-px bg-blue-300 mt-1" />
+                <div className="h-1.5 bg-blue-500 rounded w-2/3 mt-1" />
+                <div className="h-1 bg-slate-200 rounded w-full" />
+                <div className="h-1 bg-slate-200 rounded w-4/6" />
+              </div>
+              <p className="font-semibold text-slate-800 text-sm">Modern</p>
+              <p className="text-xs text-slate-500 mt-0.5">Blue accents, bold section titles</p>
+              {template === "modern" && <span className="text-xs text-blue-600 font-semibold mt-1 block">✓ Selected</span>}
+            </button>
+
+            {/* Compact */}
+            <button
+              type="button"
+              onClick={() => setTemplate("compact")}
+              className={`rounded-xl border-2 p-4 text-left transition-all ${template === "compact" ? "border-blue-500 bg-blue-50" : "border-slate-200 hover:border-blue-300"}`}
+            >
+              <div className="w-full h-28 bg-white border border-slate-200 rounded-lg mb-3 flex flex-col gap-1 p-2 overflow-hidden">
+                <div className="h-2.5 bg-slate-800 rounded w-1/3 mx-auto" />
+                <div className="h-px bg-slate-600 mt-1" />
+                <div className="h-1.5 bg-slate-600 rounded w-1/2 mt-1" />
+                <div className="flex gap-0.5 mt-0.5">
+                  <div className="h-1 bg-slate-200 rounded w-full" />
+                </div>
+                <div className="h-1 bg-slate-200 rounded w-5/6" />
+                <div className="h-px bg-slate-600 mt-1" />
+                <div className="h-1.5 bg-slate-600 rounded w-2/5 mt-0.5" />
+                <div className="h-1 bg-slate-200 rounded w-full" />
+                <div className="h-1 bg-slate-200 rounded w-3/4" />
+              </div>
+              <p className="font-semibold text-slate-800 text-sm">Compact</p>
+              <p className="text-xs text-slate-500 mt-0.5">Dense layout, more content per page</p>
+              {template === "compact" && <span className="text-xs text-blue-600 font-semibold mt-1 block">✓ Selected</span>}
+            </button>
           </div>
         </div>
 

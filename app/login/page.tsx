@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useAuth } from "../context/AuthContext";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -9,6 +10,7 @@ export default function LoginPage() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const router = useRouter();
+  const { login: authLogin } = useAuth();
 
   const login = async () => {
     try {
@@ -23,8 +25,8 @@ export default function LoginPage() {
       if (!res.ok) throw new Error(await res.text());
 
       const data = await res.json();
-      localStorage.setItem("token", data.token);
-      router.push("/upload");
+      authLogin(data.token, data.userId, email);
+      router.push("/dashboard");
     } catch (e: any) {
       setError(e.message);
     } finally {

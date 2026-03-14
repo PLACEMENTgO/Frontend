@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useAuth } from "../context/AuthContext";
 
 export default function RegisterPage() {
   const [fullName, setFullName] = useState("");
@@ -11,6 +12,7 @@ export default function RegisterPage() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const router = useRouter();
+  const { login: authLogin } = useAuth();
 
   const register = async () => {
     if (!fullName.trim()) return setError("Please enter your full name.");
@@ -24,14 +26,14 @@ export default function RegisterPage() {
       const res = await fetch("http://localhost:8080/auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ fullName, email, password }),
+        body: JSON.stringify({ email, password }),
       });
 
       if (!res.ok) throw new Error(await res.text());
 
       const data = await res.json();
-      localStorage.setItem("token", data.token);
-      router.push("/upload");
+      authLogin(data.token, data.userId, email);
+      router.push("/dashboard");
     } catch (e: any) {
       setError(e.message);
     } finally {

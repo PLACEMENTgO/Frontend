@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import Navbar from "../component/Navbar";
 import {
   Search,
   Plus,
@@ -21,46 +22,8 @@ export default function ApplicationsTracker() {
   return (
     <div className="min-h-screen bg-[#F8FAFC] text-[#0F172A] font-sans selection:bg-blue-100">
       {/* --- TOP NAVIGATION --- */}
-      <nav className="h-16 bg-white border-b border-slate-200 px-8 flex items-center justify-between sticky top-0 z-50">
-        <div className="flex items-center gap-10">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
-              <CheckCircle2 size={18} className="text-white" />
-            </div>
-            <span className="text-lg font-bold tracking-tight">
-              CareerTrack
-            </span>
-          </div>
-
-          <div className="hidden md:flex items-center gap-8 text-sm font-bold text-slate-500">
-            <button className="hover:text-blue-600">Dashboard</button>
-            <button className="text-blue-600 border-b-2 border-blue-600 py-5">
-              Applications
-            </button>
-            <button className="hover:text-blue-600">Resumes</button>
-            <button className="hover:text-blue-600">Interviews</button>
-          </div>
-        </div>
-
-        <div className="flex items-center gap-6">
-          <div className="relative hidden lg:block">
-            <Search
-              className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
-              size={16}
-            />
-            <input
-              type="text"
-              placeholder="Search apps..."
-              className="bg-slate-100 border-none rounded-xl py-2 pl-10 pr-4 text-xs w-64 focus:ring-2 focus:ring-blue-500 outline-none"
-            />
-          </div>
-          <div className="w-9 h-9 rounded-full bg-slate-200 border-2 border-white shadow-sm overflow-hidden">
-            <img
-              src="https://api.dicebear.com/7.x/avataaars/svg?seed=Alex"
-              alt="Profile"
-            />
-          </div>
-        </div>
+      <nav className="bg-white border-b border-slate-200 sticky top-0 z-50">
+        <Navbar />
       </nav>
 
       <main className="max-w-7xl mx-auto p-8">
