@@ -2,6 +2,15 @@
 
 import { useState } from "react";
 import Navbar from "../component/Navbar";
+
+// Types matching your backend DTOs
+interface CreateReferralResponse {
+  referralId: string;
+  shareLink: string;
+  linkedinSearchLink: string;
+  templates: Record<string, string>;
+}
+
 const mockJobData = {
   company: "Google",
   role: "Senior Frontend Engineer",
@@ -12,41 +21,102 @@ const mockJobData = {
   image: "https://images.unsplash.com/photo-1497366216548-37526070297c?w=200&q=80",
 };
 
-const firstConnectionTemplate = `Hi [Name],
+const API_BASE_URL = "http://localhost:8080";
 
-I noticed your work as a Senior Engineer at Google and was impressed by your recent contributions to the Material Design library.
-
-I'm currently applying for the Senior Frontend Engineer role and would love to ask a couple of questions about the team culture and day-to-day work.
-
-Would you be open to a quick 15-minute chat? I'd really appreciate any insights you could share.
-
-Best,
-[Your Name]`;
-
-const followUpTemplate = `Hi [Name],
-
-I wanted to follow up on my previous message. I've officially submitted my application for the Senior Frontend Engineer position (Job ID: 812345).
-
-I'm still very excited about the possibility of joining the team. If you're still comfortable providing a referral, please let me know and I'll send over any information you might need.
-
-Thank you so much for your time!
-
-Best,
-[Your Name]`;
+// IMPORTANT: Replace with actual user ID from your auth system
+// For now using a dummy UUID - backend requires userId header
+const USER_ID = "550e8400-e29b-41d4-a716-446655440000";
 
 export default function ReferralFinder() {
-  const [url, setUrl] = useState("https://www.linkedin.com/jobs/view/senior-frontend-engineer-at-google");
-  const [detected, setDetected] = useState(true);
+  const [jobDescription, setJobDescription] = useState("");
+  const [detected, setDetected] = useState(false);
   const [analyzing, setAnalyzing] = useState(false);
   const [copied, setCopied] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState("referrals");
+  
+  // State for API data
+  const [currentReferral, setCurrentReferral] = useState<CreateReferralResponse | null>(null);
+  const [templates, setTemplates] = useState<Record<string, string>>({});
+  const [error, setError] = useState<string | null>(null);
+  
+  // Job details extracted from backend response
+  const [jobDetails, setJobDetails] = useState<{
+    company: string;
+    role: string;
+  } | null>(null);
 
-  const handleAnalyze = () => {
+  const handleAnalyze = async () => {
+    if (!jobDescription.trim()) {
+      setError("Please provide a job description or LinkedIn URL");
+      return;
+    }
+
     setAnalyzing(true);
-    setTimeout(() => {
-      setAnalyzing(false);
+    setError(null);
+
+    try {
+      // Step 1: Create referral request
+      const requestBody = {
+        jobDescription: jobDescription.trim()
+      };
+
+      const response = await fetch(`${API_BASE_URL}/api/referrals`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "userId": USER_ID
+        },
+        body: JSON.stringify(requestBody)
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || `API Error: ${response.statusText}`);
+      }
+
+      const data: CreateReferralResponse = await response.json();
+      
+      // Backend returns templates as object with SHORT, PROFESSIONAL, CASUAL keys
+      setCurrentReferral(data);
+      setTemplates(data.templates || {});
       setDetected(true);
-    }, 1200);
+
+      // Note: Backend will extract company and role from job description
+      // These will be available in the full referral object if we fetch it by ID
+      
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to analyze job. Please try again.");
+      console.error("Error creating referral:", err);
+    } finally {
+      setAnalyzing(false);
+    }
+  };
+
+  const fetchReferralById = async (referralId: string) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/referrals/${referralId}`);
+      
+      if (!response.ok) {
+        console.warn("Failed to fetch referral details");
+        return;
+      }
+
+      const data = await response.json();
+      
+      // Update with full referral data including extracted company/role
+      if (data.company && data.role) {
+        setJobDetails({
+          company: data.company,
+          role: data.role
+        });
+      }
+      
+      // Update templates if available
+      if (data.templates) {
+        setTemplates(data.templates);
+      }
+    } catch (err) {
+      console.error("Error fetching referral details:", err);
+    }
   };
 
   const handleCopy = (key: string, text: string) => {
@@ -54,6 +124,23 @@ export default function ReferralFinder() {
     setCopied(key);
     setTimeout(() => setCopied(null), 2000);
   };
+
+  const handleLinkedInSearch = () => {
+    if (currentReferral?.linkedinSearchLink) {
+      // Opens LinkedIn search for employees at the company
+      window.open(currentReferral.linkedinSearchLink, "_blank");
+    }
+  };
+
+  // Get template values - backend returns SHORT, PROFESSIONAL, CASUAL
+  const shortTemplate = templates["SHORT"] || templates["short"] || 
+    `Hi [Name],\n\nI saw you're at ${jobDetails?.company || 'the company'}. I'm applying for ${jobDetails?.role || 'a role'} and would love to connect!\n\nBest,\n[Your Name]`;
+
+  const professionalTemplate = templates["PROFESSIONAL"] || templates["professional"] || 
+    `Hello [Name],\n\nI noticed you work at ${jobDetails?.company || 'the company'} and wanted to reach out regarding the ${jobDetails?.role || 'position'} I'm applying for.\n\nI'd appreciate any insights you could share about the team and role.\n\nThank you,\n[Your Name]`;
+
+  const casualTemplate = templates["CASUAL"] || templates["casual"] || 
+    `Hey [Name]!\n\nI'm applying for ${jobDetails?.role || 'a role'} at ${jobDetails?.company || 'your company'} and would love to chat about your experience there.\n\nWould you be open to a quick coffee chat?\n\nCheers,\n[Your Name]`;
 
   return (
     <div style={{ fontFamily: "'DM Sans', 'Segoe UI', sans-serif", minHeight: "100vh", background: "#f5f6fa" }}>
@@ -77,7 +164,27 @@ export default function ReferralFinder() {
           </p>
         </div>
 
-        {/* URL Input Card */}
+        {/* Error Message */}
+        {error && (
+          <div style={{
+            background: "#fef2f2", border: "1px solid #fecaca",
+            borderRadius: 12, padding: "12px 16px", marginBottom: 20,
+            color: "#991b1b", fontSize: 14, display: "flex",
+            alignItems: "center", gap: 8
+          }}>
+            <span>⚠️</span>
+            <span>{error}</span>
+            <button 
+              onClick={() => setError(null)}
+              style={{
+                marginLeft: "auto", background: "none", border: "none",
+                color: "#991b1b", cursor: "pointer", fontSize: 18, padding: 0
+              }}
+            >×</button>
+          </div>
+        )}
+
+        {/* Job Description Input Card */}
         <div style={{
           background: "#fff", borderRadius: 16, padding: 24,
           boxShadow: "0 1px 4px rgba(0,0,0,0.06), 0 4px 20px rgba(0,0,0,0.04)",
@@ -86,45 +193,40 @@ export default function ReferralFinder() {
           <label style={{ display: "block", fontWeight: 600, fontSize: 14, color: "#374151", marginBottom: 10 }}>
             Job Description or LinkedIn URL
           </label>
-          <div style={{ display: "flex", gap: 10 }}>
-            <div style={{
-              flex: 1, display: "flex", alignItems: "center",
-              border: "1.5px solid #e5e7eb", borderRadius: 10,
-              padding: "0 14px", background: "#fafafa",
-              transition: "border-color 0.2s"
-            }}>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" style={{ marginRight: 8, flexShrink: 0, color: "#9ca3af" }}>
-                <path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71" stroke="#9ca3af" strokeWidth="2" strokeLinecap="round"/>
-                <path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71" stroke="#9ca3af" strokeWidth="2" strokeLinecap="round"/>
-              </svg>
-              <input
-                value={url}
-                onChange={e => setUrl(e.target.value)}
-                placeholder="Paste LinkedIn job URL or job description..."
-                style={{
-                  flex: 1, border: "none", background: "none",
-                  fontFamily: "inherit", fontSize: 13.5, color: "#374151",
-                  outline: "none", padding: "13px 0",
-                }}
-              />
-            </div>
+          <div style={{ display: "flex", gap: 10, flexDirection: "column" }}>
+            <textarea
+              value={jobDescription}
+              onChange={e => setJobDescription(e.target.value)}
+              placeholder="Paste the full job description or LinkedIn job URL here...&#10;&#10;Example: https://www.linkedin.com/jobs/view/3234567890&#10;&#10;Or paste the entire job description text including company name, role, requirements, etc."
+              rows={8}
+              style={{
+                width: "100%", border: "1.5px solid #e5e7eb", borderRadius: 10,
+                padding: "14px 16px", fontFamily: "inherit", fontSize: 13.5,
+                color: "#374151", outline: "none", background: "#fafafa",
+                resize: "vertical", lineHeight: 1.6,
+                transition: "border-color 0.2s"
+              }}
+              onFocus={e => e.target.style.borderColor = "#4F6EF7"}
+              onBlur={e => e.target.style.borderColor = "#e5e7eb"}
+            />
             <button
               onClick={handleAnalyze}
-              disabled={analyzing}
+              disabled={analyzing || !jobDescription.trim()}
               style={{
-                background: analyzing ? "#a5b4fc" : "linear-gradient(135deg, #4F6EF7, #6366f1)",
+                background: analyzing || !jobDescription.trim() ? "#a5b4fc" : "linear-gradient(135deg, #4F6EF7, #6366f1)",
                 color: "#fff", border: "none", borderRadius: 10,
-                padding: "0 22px", fontFamily: "inherit", fontWeight: 600,
-                fontSize: 14, cursor: analyzing ? "wait" : "pointer",
-                display: "flex", alignItems: "center", gap: 8,
-                boxShadow: analyzing ? "none" : "0 2px 10px rgba(79,110,247,0.35)",
-                transition: "all 0.2s", whiteSpace: "nowrap"
+                padding: "13px 24px", fontFamily: "inherit", fontWeight: 600,
+                fontSize: 14, cursor: analyzing || !jobDescription.trim() ? "not-allowed" : "pointer",
+                display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
+                boxShadow: analyzing || !jobDescription.trim() ? "none" : "0 2px 10px rgba(79,110,247,0.35)",
+                transition: "all 0.2s", opacity: !jobDescription.trim() ? 0.6 : 1,
+                width: "100%"
               }}
             >
               {analyzing ? (
                 <>
                   <span style={{ animation: "spin 1s linear infinite", display: "inline-block" }}>⟳</span>
-                  Analyzing...
+                  Analyzing Job & Finding Referrals...
                 </>
               ) : (
                 <>
@@ -132,7 +234,7 @@ export default function ReferralFinder() {
                     <circle cx="11" cy="11" r="8" stroke="#fff" strokeWidth="2"/>
                     <path d="M21 21l-4.35-4.35" stroke="#fff" strokeWidth="2" strokeLinecap="round"/>
                   </svg>
-                  Analyze
+                  Find Referrals & Generate Templates
                 </>
               )}
             </button>
@@ -140,7 +242,7 @@ export default function ReferralFinder() {
         </div>
 
         {/* Job Card */}
-        {detected && (
+        {detected && currentReferral && (
           <div style={{
             background: "#fff", borderRadius: 16, padding: 20,
             boxShadow: "0 1px 4px rgba(0,0,0,0.06), 0 4px 20px rgba(0,0,0,0.04)",
@@ -150,7 +252,7 @@ export default function ReferralFinder() {
             <div style={{ display: "flex", gap: 18, alignItems: "flex-start" }}>
               <img
                 src={mockJobData.image}
-                alt="Google office"
+                alt="Company office"
                 style={{ width: 100, height: 72, borderRadius: 10, objectFit: "cover", flexShrink: 0 }}
               />
               <div style={{ flex: 1 }}>
@@ -160,7 +262,7 @@ export default function ReferralFinder() {
                     fontSize: 11.5, fontWeight: 600, padding: "3px 9px",
                     borderRadius: 20, display: "flex", alignItems: "center", gap: 4
                   }}>
-                    <span style={{ fontSize: 8 }}>●</span> Detected
+                    <span style={{ fontSize: 8 }}>●</span> Job Analyzed
                   </span>
                 </div>
                 <div style={{ fontSize: 11, color: "#9ca3af", fontWeight: 600, letterSpacing: "0.05em", textTransform: "uppercase", marginBottom: 4 }}>
@@ -184,59 +286,104 @@ export default function ReferralFinder() {
                 </div>
               </div>
             </div>
-            <div style={{ marginTop: 16 }}>
-              <button style={{
-                background: "linear-gradient(135deg, #0a66c2, #0073b1)",
-                color: "#fff", border: "none", borderRadius: 10,
-                padding: "10px 20px", fontFamily: "inherit",
-                fontWeight: 600, fontSize: 14, cursor: "pointer",
-                display: "flex", alignItems: "center", gap: 8,
-                boxShadow: "0 2px 10px rgba(10,102,194,0.3)"
-              }}>
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="8" stroke="#fff" strokeWidth="2"/><path d="M21 21l-4.35-4.35" stroke="#fff" strokeWidth="2" strokeLinecap="round"/></svg>
-                Search Referrals on LinkedIn
+            <div style={{ marginTop: 16, display: "flex", gap: 10, flexWrap: "wrap" }}>
+              <button 
+                onClick={handleLinkedInSearch}
+                style={{
+                  background: "linear-gradient(135deg, #0a66c2, #0073b1)",
+                  color: "#fff", border: "none", borderRadius: 10,
+                  padding: "10px 20px", fontFamily: "inherit",
+                  fontWeight: 600, fontSize: 14, cursor: "pointer",
+                  display: "flex", alignItems: "center", gap: 8,
+                  boxShadow: "0 2px 10px rgba(10,102,194,0.3)",
+                  transition: "transform 0.2s"
+                }}
+                onMouseEnter={e => e.currentTarget.style.transform = "translateY(-1px)"}
+                onMouseLeave={e => e.currentTarget.style.transform = "translateY(0)"}
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                  <path d="M16 8a6 6 0 016 6v7h-4v-7a2 2 0 00-2-2 2 2 0 00-2 2v7h-4v-7a6 6 0 016-6zM2 9h4v12H2z" fill="#fff"/>
+                  <circle cx="4" cy="4" r="2" fill="#fff"/>
+                </svg>
+                Search Employees on LinkedIn
               </button>
+              {currentReferral.shareLink && (
+                <button 
+                  onClick={() => {
+                    navigator.clipboard.writeText(currentReferral.shareLink);
+                    setCopied("shareLink");
+                    setTimeout(() => setCopied(null), 2000);
+                  }}
+                  style={{
+                    background: copied === "shareLink" ? "#ecfdf5" : "#f9fafb",
+                    border: `1.5px solid ${copied === "shareLink" ? "#6ee7b7" : "#e5e7eb"}`,
+                    borderRadius: 10, padding: "10px 20px",
+                    fontFamily: "inherit", fontSize: 14, fontWeight: 600,
+                    cursor: "pointer", color: copied === "shareLink" ? "#059669" : "#374151",
+                    display: "flex", alignItems: "center", gap: 8,
+                    transition: "all 0.2s"
+                  }}
+                >
+                  {copied === "shareLink" ? (
+                    <>
+                      <span style={{ fontSize: 16 }}>✓</span>
+                      Link Copied!
+                    </>
+                  ) : (
+                    <>
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                        <path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+                        <path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+                      </svg>
+                      Copy Referral Link
+                    </>
+                  )}
+                </button>
+              )}
             </div>
           </div>
         )}
 
         {/* Outreach Templates */}
-        {detected && (
+        {detected && currentReferral && (
           <div style={{ animation: "fadeIn 0.5s ease 0.1s both" }}>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
               <h3 style={{ margin: 0, fontSize: 20, fontWeight: 700, color: "#1a1d2e", letterSpacing: "-0.3px" }}>
-                Outreach Templates
+                Message Templates
               </h3>
-              <button style={{
-                background: "none", border: "1.5px solid #e5e7eb", borderRadius: 8,
-                padding: "7px 14px", fontFamily: "inherit", fontSize: 13,
-                fontWeight: 600, cursor: "pointer", color: "#4F6EF7",
-                display: "flex", alignItems: "center", gap: 6,
-                transition: "all 0.15s"
-              }}
-              onMouseEnter={e => (e.currentTarget.style.background = "#f0f4ff")}
-              onMouseLeave={e => (e.currentTarget.style.background = "none")}
-              >
-                <span>↻</span> Regenerate AI Drafts
-              </button>
+              <div style={{
+                background: "#f0f9ff", border: "1px solid #bae6fd",
+                borderRadius: 8, padding: "6px 12px", fontSize: 12,
+                color: "#0369a1", fontWeight: 600
+              }}>
+                3 Templates Generated
+              </div>
             </div>
 
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
-              {/* First Connection */}
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(230px, 1fr))", gap: 16 }}>
+              {/* Short Template */}
               <TemplateCard
-                icon="👤"
-                title="First Connection"
-                body={firstConnectionTemplate}
-                copied={copied === "first"}
-                onCopy={() => handleCopy("first", firstConnectionTemplate)}
+                icon="⚡"
+                title="Short"
+                body={shortTemplate}
+                copied={copied === "short"}
+                onCopy={() => handleCopy("short", shortTemplate)}
               />
-              {/* Follow-up */}
+              {/* Professional Template */}
               <TemplateCard
-                icon="↩️"
-                title="Follow-up Message"
-                body={followUpTemplate}
-                copied={copied === "followup"}
-                onCopy={() => handleCopy("followup", followUpTemplate)}
+                icon="💼"
+                title="Professional"
+                body={professionalTemplate}
+                copied={copied === "professional"}
+                onCopy={() => handleCopy("professional", professionalTemplate)}
+              />
+              {/* Casual Template */}
+              <TemplateCard
+                icon="👋"
+                title="Casual"
+                body={casualTemplate}
+                copied={copied === "casual"}
+                onCopy={() => handleCopy("casual", casualTemplate)}
               />
             </div>
           </div>
