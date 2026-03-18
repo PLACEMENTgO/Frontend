@@ -1,6 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { useAuth } from "../context/AuthContext";
 import Navbar from "../component/Navbar";
 
 interface CreateReferralResponse {
@@ -15,12 +17,20 @@ interface CreateReferralResponse {
 const API_BASE_URL = "http://localhost:8080";
 
 export default function ReferralFinder() {
+  const { isLoggedIn } = useAuth();
+  const router = useRouter();
   const [company, setCompany] = useState("");
   const [role, setRole] = useState("");
   const [analyzing, setAnalyzing] = useState(false);
   const [copied, setCopied] = useState<string | null>(null);
   const [referralData, setReferralData] = useState<CreateReferralResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!isLoggedIn) router.push("/login");
+  }, [isLoggedIn]);
+
+  if (!isLoggedIn) return null;
 
   const handleFind = async () => {
     if (!company.trim() || !role.trim()) {
