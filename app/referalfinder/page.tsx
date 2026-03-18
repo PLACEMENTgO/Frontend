@@ -1,6 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { useAuth } from "../context/AuthContext";
 import Navbar from "../component/Navbar";
 const mockJobData = {
   company: "Google",
@@ -35,11 +37,19 @@ Best,
 [Your Name]`;
 
 export default function ReferralFinder() {
+  const { isLoggedIn } = useAuth();
+  const router = useRouter();
   const [url, setUrl] = useState("https://www.linkedin.com/jobs/view/senior-frontend-engineer-at-google");
   const [detected, setDetected] = useState(true);
   const [analyzing, setAnalyzing] = useState(false);
   const [copied, setCopied] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState("referrals");
+
+  useEffect(() => {
+    if (!isLoggedIn) router.push("/login");
+  }, [isLoggedIn]);
+
+  if (!isLoggedIn) return null;
 
   const handleAnalyze = () => {
     setAnalyzing(true);

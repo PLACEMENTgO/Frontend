@@ -1,6 +1,8 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { useAuth } from "../context/AuthContext";
 import {
   Briefcase,
   Building2,
@@ -18,6 +20,14 @@ import {
 import Navbar from "../component/Navbar";
 
 export default function InterviewStrategyGuide() {
+  const { isLoggedIn } = useAuth();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!isLoggedIn) router.push("/login");
+  }, [isLoggedIn]);
+
+  if (!isLoggedIn) return null;
   const [tasks, setTasks] = useState([
     {
       id: 1,

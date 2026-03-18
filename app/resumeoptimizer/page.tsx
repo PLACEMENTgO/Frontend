@@ -1,10 +1,20 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { apiFetch } from "@/lib/api";
+import { useAuth } from "../context/AuthContext";
 import Navbar from "../component/Navbar";
 
 export default function UploadResumePage() {
+  const { isLoggedIn } = useAuth();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!isLoggedIn) router.push("/login");
+  }, [isLoggedIn]);
+
+  if (!isLoggedIn) return null;
   const [file, setFile] = useState<File | null>(null);
   const [jobDescription, setJobDescription] = useState("");
   const [template, setTemplate] = useState("classic");
@@ -55,13 +65,38 @@ export default function UploadResumePage() {
     link.click();
   };
 
+  // Drag & drop and file input fixes
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const [dragActive, setDragActive] = useState(false);
+
+  const handleDragOver = (e: React.DragEvent<HTMLLabelElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragActive(true);
+  };
+  const handleDragLeave = (e: React.DragEvent<HTMLLabelElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragActive(false);
+  };
+  const handleDrop = (e: React.DragEvent<HTMLLabelElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragActive(false);
+    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+      setFile(e.dataTransfer.files[0]);
+    }
+  };
+  const handleSelectFileClick = () => {
+    if (fileInputRef.current) fileInputRef.current.click();
+  };
+
   return (
     <div className="min-h-screen bg-slate-100">
       <div className="bg-white border-b border-slate-200">
         <Navbar />
       </div>
       <div className="max-w-6xl mx-auto px-6 py-10">
-
         {/* HEADER */}
         <div className="mb-8">
           <h1 className="text-2xl font-bold text-slate-900">Resume Optimizer</h1>
@@ -69,10 +104,8 @@ export default function UploadResumePage() {
             Tailor your profile to specific job descriptions and beat the ATS filters instantly.
           </p>
         </div>
-
         {/* Upload Grid */}
         <div className="grid md:grid-cols-2 gap-6 mb-8">
-
           {/* Upload Resume */}
           <div className="bg-white rounded-xl border border-slate-200 p-6">
             <div className="flex items-center gap-3 mb-4">
@@ -85,10 +118,15 @@ export default function UploadResumePage() {
               </span>
               <span className="font-semibold text-slate-900 text-sm">1. Upload Your Resume</span>
             </div>
-
             {/* Drag & Drop Zone */}
-            <label className="block border-2 border-dashed border-slate-200 rounded-xl p-10 text-center cursor-pointer hover:border-blue-300 hover:bg-blue-50 transition-colors group">
+            <label
+              className={`block border-2 border-dashed border-slate-200 rounded-xl p-10 text-center cursor-pointer hover:border-blue-300 hover:bg-blue-50 transition-colors group ${dragActive ? "border-blue-500 bg-blue-100" : ""}`}
+              onDragOver={handleDragOver}
+              onDragLeave={handleDragLeave}
+              onDrop={handleDrop}
+            >
               <input
+                ref={fileInputRef}
                 type="file"
                 accept=".pdf,.docx"
                 onChange={(e) => setFile(e.target.files?.[0] || null)}
@@ -112,10 +150,19 @@ export default function UploadResumePage() {
                 <button
                   type="button"
                   className="mt-1 px-4 py-1.5 border border-slate-300 rounded-md text-xs font-medium text-slate-600 bg-white hover:bg-slate-50 transition"
-                  onClick={(e) => e.preventDefault()}
+                  onClick={handleSelectFileClick}
                 >
                   Select File
                 </button>
+                {file && (
+                  <div className="mt-4 flex items-center justify-center bg-green-50 border border-green-200 rounded-lg px-4 py-2 gap-2 animate-fade-in">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#22c55e" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                      <polyline points="20 6 9 17 4 12" />
+                    </svg>
+                    <span className="text-green-700 font-semibold text-sm">{file.name}</span>
+                    <span className="text-green-600 text-xs font-medium">Uploaded!</span>
+                  </div>
+                )}
               </div>
             </label>
 
