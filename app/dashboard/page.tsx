@@ -314,7 +314,8 @@ export default function Dashboard() {
   const userInitials = userEmail ? userEmail.slice(0, 2).toUpperCase() : "U";
   const greeting = userEmail ? userEmail.split("@")[0] : "there";
 
-  const API_BASE_URL = "http://localhost:8080";
+  // ✅ FIXED: /api prefix add kiya
+  const API_BASE_URL = "http://localhost:8080/api";
 
   useEffect(() => {
     if (!isLoggedIn) {
@@ -354,7 +355,6 @@ export default function Dashboard() {
       setApplications(data.map(mapApiApp));
     } catch (e) {
       console.error("Failed to load applications:", e);
-      setAddError("Failed to load applications. Please try again.");
     } finally {
       setLoadingData(false);
     }
@@ -519,7 +519,6 @@ export default function Dashboard() {
   };
 
   const handleRowClick = (app: Application, e: React.MouseEvent) => {
-    // Don't trigger if clicking on action buttons
     if ((e.target as HTMLElement).closest('button')) return;
     handleStatusChange(app);
   };
@@ -741,11 +740,11 @@ export default function Dashboard() {
                     </thead>
                     <tbody>
                       {filtered.map((app, i) => (
-                        <tr 
-                          key={app.id} 
+                        <tr
+                          key={app.id}
                           onClick={(e) => handleRowClick(app, e)}
-                          style={{ 
-                            borderBottom: i < filtered.length - 1 ? "1px solid #e8ecf4" : "none", 
+                          style={{
+                            borderBottom: i < filtered.length - 1 ? "1px solid #e8ecf4" : "none",
                             cursor: "pointer",
                             transition: "background 0.15s",
                           }}
@@ -1031,13 +1030,13 @@ export default function Dashboard() {
               <button
                 onClick={updateStatus}
                 disabled={statusLoading || newStatus === statusApp.status}
-                style={{ 
-                  flex: 2, padding: "11px 0", 
-                  background: newStatus === statusApp.status ? "#d0d5dd" : "#3b5bdb", 
-                  color: "white", border: "none", borderRadius: 10, fontSize: 13, fontWeight: 600, 
-                  cursor: newStatus === statusApp.status ? "not-allowed" : "pointer", 
-                  fontFamily: "inherit", 
-                  opacity: statusLoading ? 0.7 : 1 
+                style={{
+                  flex: 2, padding: "11px 0",
+                  background: newStatus === statusApp.status ? "#d0d5dd" : "#3b5bdb",
+                  color: "white", border: "none", borderRadius: 10, fontSize: 13, fontWeight: 600,
+                  cursor: newStatus === statusApp.status ? "not-allowed" : "pointer",
+                  fontFamily: "inherit",
+                  opacity: statusLoading ? 0.7 : 1
                 }}
               >
                 {statusLoading ? "Updating..." : "Update Status"}
