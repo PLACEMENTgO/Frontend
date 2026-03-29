@@ -19,15 +19,15 @@ import {
 } from "lucide-react";
 
 export default function ReferralFinder() {
-  const { isLoggedIn } = useAuth();
+  const { isLoggedIn, loading: authLoading } = useAuth();
   const router = useRouter();
   const [copied, setCopied] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!isLoggedIn) router.push("/login");
-  }, [isLoggedIn]);
+    if (!authLoading && !isLoggedIn) router.push("/login");
+  }, [authLoading, isLoggedIn]);
 
-  if (!isLoggedIn) return null;
+  if (authLoading || !isLoggedIn) return null;
 
   const handleCopy = (text: string, id: string) => {
     navigator.clipboard.writeText(text);

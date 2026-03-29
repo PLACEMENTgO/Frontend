@@ -3,6 +3,8 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "../context/AuthContext";
+import { API_BASE_URL } from "@/lib/api";
+import GoogleSignInButton from "../component/GoogleSignInButton";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -16,7 +18,7 @@ export default function LoginPage() {
     try {
       setLoading(true);
       setError("");
-      const res = await fetch("http://localhost:8080/auth/login", {
+      const res = await fetch(`${API_BASE_URL}/auth/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
@@ -43,7 +45,7 @@ export default function LoginPage() {
           <div className="w-8 h-8 bg-blue-500 rounded-md flex items-center justify-center text-base">
             📄
           </div>
-          Resume Studio
+          PlacementGo
         </div>
 
         <div className="flex gap-1">
@@ -147,12 +149,15 @@ export default function LoginPage() {
           {/* Divider */}
           <div className="flex items-center gap-3 my-5 text-xs text-slate-400">
             <div className="flex-1 h-px bg-gray-200" />
-            <span>or</span>
+            <span>or continue with</span>
             <div className="flex-1 h-px bg-gray-200" />
           </div>
 
+          {/* Google Sign In */}
+          <GoogleSignInButton />
+
           {/* Signup */}
-          <div className="text-center text-xs text-slate-500 mt-4">
+          <div className="text-center text-xs text-slate-500 mt-5">
             Don't have an account?{" "}
             <a
               href="/register"

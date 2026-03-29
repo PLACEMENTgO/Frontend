@@ -2,12 +2,14 @@
 
 import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { apiFetch } from "@/lib/api";
+import { apiFetch, API_BASE_URL } from "@/lib/api";
 import { useAuth } from "../context/AuthContext";
 import Navbar from "../component/Navbar";
+import { useResumes } from "../../hooks/useResume";
+import { getResumeDetail } from "../../services/resume.service";  
 
 export default function UploadResumePage() {
-  const { isLoggedIn } = useAuth();
+  const { isLoggedIn, loading: authLoading } = useAuth();
   const router = useRouter();
 
   const [file, setFile] = useState<File | null>(null);
@@ -20,12 +22,16 @@ export default function UploadResumePage() {
   const [originalPdfUrl, setOriginalPdfUrl] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [dragActive, setDragActive] = useState(false);
+  const [historyFilter, setHistoryFilter] = useState("");
+  const [downloadingId, setDownloadingId] = useState<string | null>(null);
+
+  const { resumes, loading: resumesLoading, refresh: refreshResumes } = useResumes();
 
   useEffect(() => {
-    if (!isLoggedIn) router.push("/login");
-  }, [isLoggedIn]);
+    if (!authLoading && !isLoggedIn) router.push("/login");
+  }, [authLoading, isLoggedIn]);
 
-  if (!isLoggedIn) return null;
+  if (authLoading || !isLoggedIn) return null;
 
   const uploadResume = async () => {
     if (!file) return alert("Please select a file");
@@ -42,7 +48,7 @@ export default function UploadResumePage() {
       setPdfBase64(null);
       setLatex(null);
 
-      const data = await apiFetch("http://localhost:8080/api/resumes/upload", {
+      const data = await apiFetch(`${API_BASE_URL}/api/resumes/upload`, {
         method: "POST",
         body: formData,
       });
@@ -54,6 +60,7 @@ export default function UploadResumePage() {
 
       setPdfBase64(data.pdfBase64);
       setLatex(data.latex);
+      refreshResumes();
     } catch (err: any) {
       setError(err.message || "Something went wrong");
     } finally {
@@ -92,6 +99,22 @@ export default function UploadResumePage() {
       setFile(dropped);
       if (originalPdfUrl) URL.revokeObjectURL(originalPdfUrl);
       setOriginalPdfUrl(URL.createObjectURL(dropped));
+    }
+  };
+
+  const downloadSavedResume = async (id: string, fileName: string) => {
+    setDownloadingId(id);
+    try {
+      const detail = await getResumeDetail(id);
+      if (!detail.pdfBase64) return;
+      const link = document.createElement("a");
+      link.href = `data:application/pdf;base64,${detail.pdfBase64}`;
+      link.download = `optimized-${fileName || "resume"}.pdf`;
+      link.click();
+    } catch (e: any) {
+      alert("Failed to download: " + (e.message || "unknown error"));
+    } finally {
+      setDownloadingId(null);
     }
   };
 
@@ -455,6 +478,94 @@ export default function UploadResumePage() {
             )}
           </div>
         )}
+
+        {/* ── Saved Resumes History ── */}
+        <div className="mt-14">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-lg font-bold text-slate-900">My Saved Resumes</h2>
+            <span className="text-xs text-slate-400">{resumes.length} generated</span>
+          </div>
+
+          {/* Search / filter by job description */}
+          <div className="relative mb-5">
+            <svg className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+            </svg>
+            <input
+              type="text"
+              value={historyFilter}
+              onChange={(e) => setHistoryFilter(e.target.value)}
+              placeholder="Filter by job description keyword..."
+              className="w-full pl-9 pr-4 py-2 rounded-lg border border-slate-200 text-sm text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-400"
+            />
+          </div>
+
+          {resumesLoading ? (
+            <div className="text-sm text-slate-400 py-8 text-center">Loading saved resumes...</div>
+          ) : resumes.length === 0 ? (
+            <div className="bg-white border border-dashed border-slate-200 rounded-xl py-12 text-center text-slate-400 text-sm">
+              No saved resumes yet. Generate one above and it will appear here.
+            </div>
+          ) : (() => {
+            const filtered = historyFilter.trim()
+              ? resumes.filter((r) =>
+                  (r.jobDescriptionSnippet ?? "").toLowerCase().includes(historyFilter.toLowerCase()) ||
+                  (r.originalFileName ?? "").toLowerCase().includes(historyFilter.toLowerCase())
+                )
+              : resumes;
+
+            if (filtered.length === 0) {
+              return (
+                <div className="text-sm text-slate-400 py-6 text-center">
+                  No resumes match &quot;{historyFilter}&quot;.
+                </div>
+              );
+            }
+
+            return (
+              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {filtered.map((r) => (
+                  <div key={r.id} className="bg-white border border-slate-200 rounded-xl p-5 flex flex-col gap-3 hover:shadow-md transition-shadow">
+                    {/* Header */}
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="flex items-center gap-2 min-w-0">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0">
+                          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/>
+                        </svg>
+                        <span className="text-sm font-semibold text-slate-800 truncate">{r.originalFileName || "resume"}</span>
+                      </div>
+                      <span className="shrink-0 text-xs font-medium px-2 py-0.5 rounded-full bg-blue-50 text-blue-600 capitalize">{r.templateName ?? "classic"}</span>
+                    </div>
+
+                    {/* Job description snippet */}
+                    <p className="text-xs text-slate-500 leading-relaxed line-clamp-3">
+                      {r.jobDescriptionSnippet || "No job description."}
+                    </p>
+
+                    {/* Footer */}
+                    <div className="flex items-center justify-between mt-auto pt-2 border-t border-slate-100">
+                      <span className="text-xs text-slate-400">
+                        {new Date(r.createdAt).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })}
+                      </span>
+                      <button
+                        onClick={() => downloadSavedResume(r.id, r.originalFileName)}
+                        disabled={downloadingId === r.id}
+                        className="flex items-center gap-1.5 text-xs font-semibold text-slate-700 hover:text-blue-600 disabled:opacity-50 transition-colors"
+                      >
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                          <polyline points="7 10 12 15 17 10"/>
+                          <line x1="12" y1="15" x2="12" y2="3"/>
+                        </svg>
+                        {downloadingId === r.id ? "Downloading..." : "Download PDF"}
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            );
+          })()}
+        </div>
 
       </div>
     </div>
