@@ -14,10 +14,10 @@ interface CreateReferralResponse {
   role: string;
 }
 
-const API_BASE_URL = "http://localhost:8080";
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
 
 export default function ReferralFinder() {
-  const { isLoggedIn } = useAuth();
+  const { isLoggedIn, loading: authLoading } = useAuth();
   const router = useRouter();
   const [company, setCompany] = useState("");
   const [role, setRole] = useState("");
@@ -27,10 +27,10 @@ export default function ReferralFinder() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!isLoggedIn) router.push("/login");
-  }, [isLoggedIn]);
+    if (!authLoading && !isLoggedIn) router.push("/login");
+  }, [authLoading, isLoggedIn]);
 
-  if (!isLoggedIn) return null;
+  if (authLoading || !isLoggedIn) return null;
 
   const handleFind = async () => {
     if (!company.trim() || !role.trim()) {

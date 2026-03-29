@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import Navbar from "../component/Navbar"; // Adjust import path as needed
+import { apiFetch, API_BASE_URL } from "@/lib/api";
 import {
   CheckCircle,
   ArrowRight,
@@ -42,8 +43,8 @@ export default function Home() {
     setResult(null);
 
     try {
-      const response = await fetch(
-        "http://localhost:8080/api/jd-intel/analyze",
+      const data = await apiFetch(
+        `${API_BASE_URL}/api/jd-intel/analyze`,
         {
           method: "POST",
           headers: {
@@ -53,12 +54,6 @@ export default function Home() {
           body: JSON.stringify(formData),
         },
       );
-
-      if (!response.ok) {
-        throw new Error("Failed to analyze Job Description. Please try again.");
-      }
-
-      const data = await response.json();
       setResult(data);
     } catch (err: any) {
       setError(err.message || "An unexpected error occurred.");

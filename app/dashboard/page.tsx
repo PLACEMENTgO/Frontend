@@ -3,6 +3,8 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth } from "../context/AuthContext";
+import { useResumes } from "../../hooks/useResume";
+import { getResumeDetail } from "../../services/resume.service";  
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -282,7 +284,7 @@ const EditIcon = () => (
 
 export default function Dashboard() {
   const router = useRouter();
-  const { isLoggedIn, logout, userEmail } = useAuth();
+  const { isLoggedIn, loading: authLoading, logout, userEmail } = useAuth();
   const [applications, setApplications] = useState<Application[]>([]);
   const [loadingData, setLoadingData] = useState(true);
   const [activeFilter, setActiveFilter] = useState<FilterType>("all");
@@ -311,18 +313,24 @@ export default function Dashboard() {
   const [deletingApp, setDeletingApp] = useState<Application | null>(null);
   const [deleteLoading, setDeleteLoading] = useState(false);
 
+  // Resumes
+  const { resumes, loading: resumesLoading } = useResumes();
+  const [downloadingId, setDownloadingId] = useState<string | null>(null);
+
   const userInitials = userEmail ? userEmail.slice(0, 2).toUpperCase() : "U";
   const greeting = userEmail ? userEmail.split("@")[0] : "there";
 
-  const API_BASE_URL = "http://localhost:8080";
+  const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
 
   useEffect(() => {
-    if (!isLoggedIn) {
+    if (authLoading) return;
+    const token = localStorage.getItem("token");
+    if (!token) {
       router.push("/login");
       return;
     }
     fetchApplications();
-  }, [isLoggedIn]);
+  }, [authLoading]);
 
   // ─── API Functions ────────────────────────────────────────────────────────
 
@@ -342,11 +350,6 @@ export default function Dashboard() {
       });
       
       if (!res.ok) {
-        if (res.status === 401) {
-          logout();
-          router.push("/login");
-          return;
-        }
         throw new Error("Failed to fetch applications");
       }
       
@@ -536,7 +539,7 @@ export default function Dashboard() {
     offers: applications.filter(a => a.status === "offer").length,
   };
 
-  if (!isLoggedIn) return null;
+  if (authLoading) return null;
 
   return (
     <div style={{ display: "flex", minHeight: "100vh", background: "#f4f6fb", fontFamily: "'DM Sans', sans-serif", color: "#1a1d2e" }}>
@@ -625,7 +628,7 @@ export default function Dashboard() {
 
         {/* Greeting */}
         <div style={{ marginBottom: 4 }}>
-          <h1 style={{ fontSize: 24, fontWeight: 800 }}>Good morning, {greeting} 👋</h1>
+          <h1 style={{ fontSize: 24, fontWeight: 800 }}>Welcome Again, {greeting} 👋</h1>
           <p style={{ fontSize: 13.5, color: "#7b8299", marginTop: 4 }}>Here's a summary of your career progress today.</p>
         </div>
 
@@ -847,6 +850,98 @@ export default function Dashboard() {
 
           </div>
         </div>
+
+        {/* ── MY RESUMES ── */}
+        <div style={{ marginTop: 32 }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
+            <span style={{ fontSize: 15, fontWeight: 700 }}>My Optimized Resumes</span>
+            <Link href="/resumeoptimizer" style={{ fontSize: 13, color: "#3b5bdb", fontWeight: 600, textDecoration: "none" }}>+ Generate new</Link>
+          </div>
+
+          {resumesLoading ? (
+            <div style={{ fontSize: 13, color: "#7b8299", textAlign: "center", padding: "32px 0" }}>Loading resumes...</div>
+          ) : resumes.length === 0 ? (
+            <div style={{
+              background: "white", border: "1.5px dashed #e8ecf4", borderRadius: 14,
+              padding: "36px 24px", textAlign: "center", color: "#7b8299", fontSize: 13,
+            }}>
+              No optimized resumes yet —{" "}
+              <Link href="/resumeoptimizer" style={{ color: "#3b5bdb", fontWeight: 600, textDecoration: "none" }}>generate one now</Link>.
+            </div>
+          ) : (
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))", gap: 14 }}>
+              {resumes.slice(0, 6).map((r) => (
+                <div key={r.id} style={{
+                  background: "white", border: "1px solid #e8ecf4", borderRadius: 14,
+                  padding: "16px 18px", display: "flex", flexDirection: "column", gap: 10,
+                }}>
+                  <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 8 }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 8, minWidth: 0 }}>
+                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#3b5bdb" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/>
+                      </svg>
+                      <span style={{ fontSize: 13, fontWeight: 600, color: "#1a1d2e", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                        {r.originalFileName || "resume"}
+                      </span>
+                    </div>
+                    <span style={{
+                      flexShrink: 0, fontSize: 11, fontWeight: 600, padding: "2px 8px",
+                      borderRadius: 20, background: "#e7f5ff", color: "#1971c2",
+                    }}>{r.templateName ?? "classic"}</span>
+                  </div>
+                  <p style={{ fontSize: 12, color: "#7b8299", lineHeight: 1.5, margin: 0,
+                    display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" as const, overflow: "hidden",
+                  }}>
+                    {r.jobDescriptionSnippet || "No job description."}
+                  </p>
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", borderTop: "1px solid #f0f2f7", paddingTop: 10, marginTop: "auto" }}>
+                    <span style={{ fontSize: 11, color: "#adb5bd" }}>
+                      {new Date(r.createdAt).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })}
+                    </span>
+                    <button
+                      disabled={downloadingId === r.id}
+                      onClick={async () => {
+                        setDownloadingId(r.id);
+                        try {
+                          const detail = await getResumeDetail(r.id);
+                          const binary = atob(detail.pdfBase64);
+                          const arr = new Uint8Array(binary.length);
+                          for (let i = 0; i < binary.length; i++) arr[i] = binary.charCodeAt(i);
+                          const blob = new Blob([arr], { type: "application/pdf" });
+                          const url = URL.createObjectURL(blob);
+                          const a = document.createElement("a");
+                          a.href = url; a.download = `optimized-${r.originalFileName || "resume"}.pdf`;
+                          a.click(); URL.revokeObjectURL(url);
+                        } catch { /* ignore */ } finally { setDownloadingId(null); }
+                      }}
+                      style={{
+                        display: "flex", alignItems: "center", gap: 5,
+                        fontSize: 12, fontWeight: 600, color: downloadingId === r.id ? "#adb5bd" : "#3b5bdb",
+                        background: "none", border: "none", cursor: downloadingId === r.id ? "not-allowed" : "pointer",
+                        fontFamily: "inherit", padding: 0,
+                      }}
+                    >
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                        <polyline points="7 10 12 15 17 10"/>
+                        <line x1="12" y1="15" x2="12" y2="3"/>
+                      </svg>
+                      {downloadingId === r.id ? "..." : "Download"}
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+          {resumes.length > 6 && (
+            <div style={{ textAlign: "center", marginTop: 12 }}>
+              <Link href="/resumeoptimizer" style={{ fontSize: 13, color: "#3b5bdb", fontWeight: 600, textDecoration: "none" }}>
+                View all {resumes.length} resumes →
+              </Link>
+            </div>
+          )}
+        </div>
+
       </main>
 
       {/* ── ADD APPLICATION MODAL ── */}
