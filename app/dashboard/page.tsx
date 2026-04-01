@@ -533,14 +533,25 @@ export default function Dashboard() {
 
   // ─── Computed Values ──────────────────────────────────────────────────────
 
-  const searchLower = searchQuery.toLowerCase();
-  const filtered = applications
+const filtered = (() => {
+  let regex: RegExp | null = null;
+  if (searchQuery.trim() !== "") {
+    try {
+      regex = new RegExp(searchQuery, "i");
+    } catch {
+      // Invalid regex — fall back to plain string match
+      regex = new RegExp(searchQuery.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "i");
+    }
+  }
+
+  return applications
     .filter(a => activeFilter === "all" || a.status === activeFilter)
-    .filter(a =>
-      searchLower === "" ||
-      a.company.toLowerCase().includes(searchLower) ||
-      a.position.toLowerCase().includes(searchLower)
-    );
+    .filter(a => {
+      if (!regex) return true;
+      return regex.test(a.company) || regex.test(a.position);
+    });
+})();
+
 
   const stats = {
     total: applications.length,
@@ -1040,7 +1051,9 @@ export default function Dashboard() {
                     type={field.type}
                     placeholder={field.placeholder}
                     value={(addForm as Record<string, string>)[field.key]}
-                    max={field.type === "date" ? "2099-12-31" : undefined}
+               
+min={field.type === "date" ? "2026-01-01" : undefined}
+max={field.type === "date" ? "2099-12-31" : undefined}
                     onChange={e => setAddForm(prev => ({ ...prev, [field.key]: e.target.value }))}
                     style={{
                       width: "100%", padding: "10px 14px", fontSize: 13, border: "1.5px solid #e8ecf4",
@@ -1105,7 +1118,8 @@ export default function Dashboard() {
                     type={field.type}
                     placeholder={field.placeholder}
                     value={(editForm as Record<string, string>)[field.key]}
-                    max={field.type === "date" ? "2099-12-31" : undefined}
+                  min={field.type === "date" ? "2026-01-01" : undefined}
+max={field.type === "date" ? "2099-12-31" : undefined}
                     onChange={e => setEditForm(prev => ({ ...prev, [field.key]: e.target.value }))}
                     style={{
                       width: "100%", padding: "10px 14px", fontSize: 13, border: "1.5px solid #e8ecf4",
