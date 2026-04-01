@@ -1,0 +1,34 @@
+name: Deploy Frontend to EC2
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    if: github.repository == 'nepal143/FrontendPlacementGO'
+
+    steps:
+      - name: Deploy to EC2 via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            set -e
+            echo "==> Pulling latest frontend code..."
+            cd ~/app/frontend/frontendplacementgo
+            git fetch origin main
+            git reset --hard origin/main
+
+            echo "==> Freeing build cache..."
+            docker builder prune -f > /dev/null 2>&1 || true
+
+            echo "==> Rebuilding frontend container..."
+            cd ~/app
+            docker compose up -d --build --no-deps frontend
+
+            echo "==> Done. Frontend deployed."
+            docker ps --format "table {{.Names}}\t{{.Status}}"
