@@ -565,11 +565,11 @@ const filtered = (() => {
   if (authLoading) return null;
 
   return (
-    <div style={{ display: "flex", minHeight: "100vh", background: var(--pg-bg), fontFamily: "'DM Sans', sans-serif", color: var(--pg-text) }}>
+    <div style={{ display: "flex", minHeight: "100vh", background: "var(--pg-bg)", fontFamily: "'DM Sans', sans-serif", color: "var(--pg-text)" }}>
 
       {/* ── SIDEBAR ── */}
       <aside style={{
-        width: 220, background: var(--pg-card), borderRight: "1px solid var(--pg-border)",
+        width: 220, background: "var(--pg-card)", borderRight: "1px solid var(--pg-border)",
         display: "flex", flexDirection: "column", padding: "24px 0",
         position: "fixed", height: "100vh", zIndex: 10,
       }}>
@@ -584,13 +584,13 @@ const filtered = (() => {
           </div>
         </Link>
 
-        <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: "1.2px", textTransform: "uppercase", color: var(--pg-muted), padding: "20px 20px 8px" }}>Menu</span>
+        <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: "1.2px", textTransform: "uppercase", color: "var(--pg-muted)", padding: "20px 20px 8px" }}>Menu</span>
         <NavItem icon={<DashboardIcon />} label="Dashboard" href="/dashboard" active />
         <NavItem icon={<DocIcon />} label="Resume Optimizer" href="/resumeoptimizer" />
         <NavItem icon={<UsersIcon />} label="Referral Finder" href="/referalfinder" />
         <NavItem icon={<CalendarIcon />} label="Interview Guide" href="/interview" />
 
-        <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: "1.2px", textTransform: "uppercase", color: var(--pg-muted), padding: "20px 20px 8px" }}>Account</span>
+        <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: "1.2px", textTransform: "uppercase", color: "var(--pg-muted)", padding: "20px 20px 8px" }}>Account</span>
         <NavItem icon={<SettingsIcon />} label="Settings" href="/settings" />
 
         <div style={{ marginTop: "auto", padding: 16, borderTop: "1px solid var(--pg-border)" }}>
@@ -602,10 +602,10 @@ const filtered = (() => {
               color: "white", fontWeight: 700, fontSize: 13, flexShrink: 0,
             }}>{userInitials}</div>
             <div style={{ overflow: "hidden" }}>
-              <div style={{ fontSize: 12, fontWeight: 600, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", color: var(--pg-text) }}>
+              <div style={{ fontSize: 12, fontWeight: 600, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", color: "var(--pg-text)" }}>
                 {userEmail || "User"}
               </div>
-              <div style={{ fontSize: 11, color: var(--pg-muted) }}>Student Plan</div>
+              <div style={{ fontSize: 11, color: "var(--pg-muted)" }}>Student Plan</div>
             </div>
           </div>
           <button
@@ -624,7 +624,7 @@ const filtered = (() => {
         <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 28 }}>
           <div style={{
             display: "flex", alignItems: "center", gap: 10,
-            background: var(--pg-card), border: "1px solid var(--pg-border)", borderRadius: 10,
+            background: "var(--pg-card)", border: "1px solid var(--pg-border)", borderRadius: 10,
             padding: "9px 14px", maxWidth: 360, flex: 1,
           }}>
             <SearchIcon />
@@ -634,7 +634,7 @@ const filtered = (() => {
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
               style={{
-                border: "none", outline: "none", fontSize: 13.5, color: var(--pg-text),
+                border: "none", outline: "none", fontSize: 13.5, color: "var(--pg-text)",
                 background: "transparent", flex: 1, fontFamily: "inherit",
               }}
             />
@@ -655,9 +655,9 @@ const filtered = (() => {
               onClick={() => setTheme(isDark ? "light" : "dark")}
               title={isDark ? "Switch to light mode" : "Switch to dark mode"}
               style={{
-                width: 38, height: 38, borderRadius: 10, background: var(--pg-card),
+                width: 38, height: 38, borderRadius: 10, background: "var(--pg-card)",
                 border: "1px solid var(--pg-border)", display: "flex", alignItems: "center",
-                justifyContent: "center", color: var(--pg-muted),
+                justifyContent: "center", color: "var(--pg-muted)",
                 cursor: "pointer", fontFamily: "inherit",
               }}
             >
@@ -676,9 +676,9 @@ const filtered = (() => {
               )}
             </button>
             <div style={{
-              width: 38, height: 38, borderRadius: 10, background: var(--pg-card),
+              width: 38, height: 38, borderRadius: 10, background: "var(--pg-card)",
               border: "1px solid var(--pg-border)", display: "flex", alignItems: "center",
-              justifyContent: "center", color: var(--pg-muted),
+              justifyContent: "center", color: "var(--pg-muted)",
             }}><BellIcon /></div>
           </div>
         </div>
@@ -686,7 +686,7 @@ const filtered = (() => {
         {/* Greeting */}
         <div style={{ marginBottom: 4 }}>
           <h1 style={{ fontSize: 24, fontWeight: 800 }}>Welcome Again, {greeting} 👋</h1>
-          <p style={{ fontSize: 13.5, color: var(--pg-muted), marginTop: 4 }}>Here's a summary of your career progress today.</p>
+          <p style={{ fontSize: 13.5, color: "var(--pg-muted)", marginTop: 4 }}>Here's a summary of your career progress today.</p>
         </div>
 
         {/* Stat Cards */}
@@ -702,7 +702,7 @@ const filtered = (() => {
           {/* LEFT */}
           <div>
             {/* Quick Actions */}
-            <div style={{ fontSize: 15, fontWeight: 700, marginBottom: 14, color: var(--pg-text) }}>Quick Actions</div>
+            <div style={{ fontSize: 15, fontWeight: 700, marginBottom: 14, color: "var(--pg-text)" }}>Quick Actions</div>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 12, marginBottom: 24 }}>
               {[
                 { icon: <UploadIcon />, label: "Upload CV", href: "/resumeoptimizer" },
@@ -713,18 +713,18 @@ const filtered = (() => {
                 "href" in qa ? (
                   <Link key={qa.label} href={qa.href!} style={{
                     display: "flex", flexDirection: "column", alignItems: "center", gap: 8,
-                    background: var(--pg-card), border: "1px solid var(--pg-border)", borderRadius: 12,
+                    background: "var(--pg-card)", border: "1px solid var(--pg-border)", borderRadius: 12,
                     padding: "16px 10px", cursor: "pointer", fontSize: 12.5, fontWeight: 500,
-                    color: var(--pg-text), textDecoration: "none", fontFamily: "inherit",
+                    color: "var(--pg-text)", textDecoration: "none", fontFamily: "inherit",
                   }}>
                     {qa.icon}{qa.label}
                   </Link>
                 ) : (
                   <button key={qa.label} onClick={qa.onClick} style={{
                     display: "flex", flexDirection: "column", alignItems: "center", gap: 8,
-                    background: var(--pg-card), border: "1px solid var(--pg-border)", borderRadius: 12,
+                    background: "var(--pg-card)", border: "1px solid var(--pg-border)", borderRadius: 12,
                     padding: "16px 10px", cursor: "pointer", fontSize: 12.5, fontWeight: 500,
-                    color: var(--pg-text), fontFamily: "inherit",
+                    color: "var(--pg-text)", fontFamily: "inherit",
                   }}>
                     {qa.icon}{qa.label}
                   </button>
@@ -733,9 +733,9 @@ const filtered = (() => {
             </div>
 
             {/* Pipeline Card */}
-            <div style={{ background: var(--pg-card), border: "1px solid var(--pg-border)", borderRadius: 14, overflow: "hidden" }}>
+            <div style={{ background: "var(--pg-card)", border: "1px solid var(--pg-border)", borderRadius: 14, overflow: "hidden" }}>
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "18px 20px", borderBottom: "1px solid var(--pg-border)" }}>
-                <span style={{ fontSize: 15, fontWeight: 700, color: var(--pg-text) }}>Active Pipeline</span>
+                <span style={{ fontSize: 15, fontWeight: 700, color: "var(--pg-text)" }}>Active Pipeline</span>
                 <button
                   onClick={() => setShowAddModal(true)}
                   style={{ fontSize: 13, color: "#3b5bdb", fontWeight: 600, cursor: "pointer", background: "none", border: "none", fontFamily: "inherit" }}
@@ -757,8 +757,8 @@ const filtered = (() => {
                         padding: "5px 12px", borderRadius: 20, fontSize: 12, fontWeight: 600,
                         cursor: "pointer", whiteSpace: "nowrap", transition: "all 0.15s",
                         border: isActive ? `1.5px solid ${activeColor}` : "1.5px solid transparent",
-                        background: isActive ? activeColor : var(--pg-chip),
-                        color: isActive ? "white" : var(--pg-muted),
+                        background: isActive ? activeColor : "var(--pg-chip)",
+                        color: isActive ? "white" : "var(--pg-muted)",
                         fontFamily: "inherit",
                       }}
                     >
@@ -779,11 +779,11 @@ const filtered = (() => {
               {/* Table */}
               <div style={{ overflowX: "auto" }}>
                 {loadingData ? (
-                  <div style={{ textAlign: "center", padding: "40px 20px", color: var(--pg-muted), fontSize: 13.5 }}>
+                  <div style={{ textAlign: "center", padding: "40px 20px", color: "var(--pg-muted)", fontSize: 13.5 }}>
                     Loading your applications...
                   </div>
                 ) : filtered.length === 0 ? (
-                  <div style={{ textAlign: "center", padding: "40px 20px", color: var(--pg-muted), fontSize: 13.5 }}>
+                  <div style={{ textAlign: "center", padding: "40px 20px", color: "var(--pg-muted)", fontSize: 13.5 }}>
                     {applications.length === 0
                       ? "No applications yet — add your first one above!"
                       : "No applications found for this status."}
@@ -791,9 +791,9 @@ const filtered = (() => {
                 ) : (
                   <table style={{ width: "100%", borderCollapse: "collapse" }}>
                     <thead>
-                      <tr style={{ background: var(--pg-table-hdr), borderBottom: "1px solid var(--pg-border)" }}>
+                      <tr style={{ background: "var(--pg-table-hdr)", borderBottom: "1px solid var(--pg-border)" }}>
                         {["Company", "Position", "Status", "Added", "Actions"].map(h => (
-                          <th key={h} style={{ textAlign: "left", fontSize: 11, fontWeight: 700, letterSpacing: "0.8px", textTransform: "uppercase", color: var(--pg-muted), padding: "10px 20px" }}>
+                          <th key={h} style={{ textAlign: "left", fontSize: 11, fontWeight: 700, letterSpacing: "0.8px", textTransform: "uppercase", color: "var(--pg-muted)", padding: "10px 20px" }}>
                             {h}
                           </th>
                         ))}
@@ -809,7 +809,7 @@ const filtered = (() => {
                             cursor: "pointer",
                             transition: "background 0.15s",
                           }}
-                          onMouseEnter={(e) => e.currentTarget.style.background = var(--pg-table-hdr)}
+                          onMouseEnter={(e) => e.currentTarget.style.background = "var(--pg-table-hdr)"}
                           onMouseLeave={(e) => e.currentTarget.style.background = "transparent"}
                         >
                           <td style={{ padding: "14px 20px" }}>
@@ -819,12 +819,12 @@ const filtered = (() => {
                                 background: app.logoColor, display: "flex", alignItems: "center",
                                 justifyContent: "center", color: "white", fontWeight: 800, fontSize: 13, flexShrink: 0,
                               }}>{app.logo}</div>
-                              <span style={{ fontWeight: 600, fontSize: 13.5, color: var(--pg-text) }}>{app.company}</span>
+                              <span style={{ fontWeight: 600, fontSize: 13.5, color: "var(--pg-text)" }}>{app.company}</span>
                             </div>
                           </td>
-                          <td style={{ padding: "14px 20px", fontSize: 13, color: var(--pg-text) }}>{app.position}</td>
+                          <td style={{ padding: "14px 20px", fontSize: 13, color: "var(--pg-text)" }}>{app.position}</td>
                           <td style={{ padding: "14px 20px" }}><StatusPill status={app.status} /></td>
-                          <td style={{ padding: "14px 20px", fontSize: 12, color: var(--pg-muted) }}>
+                          <td style={{ padding: "14px 20px", fontSize: 12, color: "var(--pg-muted)" }}>
                             {app.appliedDate
                               ? new Date(app.appliedDate).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })
                               : app.activity}
@@ -839,7 +839,7 @@ const filtered = (() => {
                                   onClick={(e) => e.stopPropagation()}
                                   style={{
                                     padding: "6px 10px", borderRadius: 6, border: "1px solid var(--pg-border)",
-                                    background: var(--pg-card), cursor: "pointer", display: "flex", alignItems: "center",
+                                    background: "var(--pg-card)", cursor: "pointer", display: "flex", alignItems: "center",
                                     gap: 4, fontSize: 12, fontWeight: 500, color: "#2e7d32", textDecoration: "none",
                                   }}
                                   title="View Job Posting"
@@ -853,7 +853,7 @@ const filtered = (() => {
                                 onClick={(e) => { e.stopPropagation(); handleEdit(app); }}
                                 style={{
                                   padding: "6px 10px", borderRadius: 6, border: "1px solid var(--pg-border)",
-                                  background: var(--pg-card), cursor: "pointer", display: "flex", alignItems: "center",
+                                  background: "var(--pg-card)", cursor: "pointer", display: "flex", alignItems: "center",
                                   gap: 4, fontSize: 12, fontWeight: 500, color: "#3b5bdb", fontFamily: "inherit",
                                 }}
                                 title="Edit"
@@ -864,7 +864,7 @@ const filtered = (() => {
                                 onClick={(e) => { e.stopPropagation(); handleDelete(app); }}
                                 style={{
                                   padding: "6px 10px", borderRadius: 6, border: "1px solid var(--pg-border)",
-                                  background: var(--pg-card), cursor: "pointer", display: "flex", alignItems: "center",
+                                  background: "var(--pg-card)", cursor: "pointer", display: "flex", alignItems: "center",
                                   gap: 4, fontSize: 12, fontWeight: 500, color: "#e03131", fontFamily: "inherit",
                                 }}
                                 title="Delete"
@@ -886,8 +886,8 @@ const filtered = (() => {
           <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
 
             {/* Status Breakdown */}
-            <div style={{ background: var(--pg-card), border: "1px solid var(--pg-border)", borderRadius: 14, padding: 18 }}>
-              <div style={{ fontSize: 15, fontWeight: 700, marginBottom: 14, color: var(--pg-text) }}>Status Breakdown</div>
+            <div style={{ background: "var(--pg-card)", border: "1px solid var(--pg-border)", borderRadius: 14, padding: 18 }}>
+              <div style={{ fontSize: 15, fontWeight: 700, marginBottom: 14, color: "var(--pg-text)" }}>Status Breakdown</div>
               {FILTERS.filter(f => f.value !== "all").map(f => {
                 const count = applications.filter(a => a.status === f.value).length;
                 const pct = applications.length > 0 ? Math.round((count / applications.length) * 100) : 0;
@@ -896,16 +896,16 @@ const filtered = (() => {
                   <div key={f.value} style={{ marginBottom: 12 }}>
                     <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12.5, fontWeight: 500, marginBottom: 4 }}>
                       <span>{f.label}</span>
-                      <span style={{ color: var(--pg-muted) }}>{count} ({pct}%)</span>
+                      <span style={{ color: "var(--pg-muted)" }}>{count} ({pct}%)</span>
                     </div>
-                    <div style={{ height: 6, background: var(--pg-chip), borderRadius: 10, overflow: "hidden" }}>
+                    <div style={{ height: 6, background: "var(--pg-chip)", borderRadius: 10, overflow: "hidden" }}>
                       <div style={{ height: "100%", width: `${pct}%`, background: color, borderRadius: 10, transition: "width 0.4s" }} />
                     </div>
                   </div>
                 );
               })}
               {applications.length === 0 && (
-                <div style={{ fontSize: 12, color: var(--pg-muted), textAlign: "center", paddingTop: 4 }}>
+                <div style={{ fontSize: 12, color: "var(--pg-muted)", textAlign: "center", paddingTop: 4 }}>
                   Add applications to see your breakdown
                 </div>
               )}
@@ -933,16 +933,16 @@ const filtered = (() => {
         {/* ── MY RESUMES ── */}
         <div style={{ marginTop: 32 }}>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
-            <span style={{ fontSize: 15, fontWeight: 700, color: var(--pg-text) }}>My Optimized Resumes</span>
+            <span style={{ fontSize: 15, fontWeight: 700, color: "var(--pg-text)" }}>My Optimized Resumes</span>
             <Link href="/resumeoptimizer" style={{ fontSize: 13, color: "#3b5bdb", fontWeight: 600, textDecoration: "none" }}>+ Generate new</Link>
           </div>
 
           {resumesLoading ? (
-            <div style={{ fontSize: 13, color: var(--pg-muted), textAlign: "center", padding: "32px 0" }}>Loading resumes...</div>
+            <div style={{ fontSize: 13, color: "var(--pg-muted)", textAlign: "center", padding: "32px 0" }}>Loading resumes...</div>
           ) : resumes.length === 0 ? (
             <div style={{
-              background: var(--pg-card), border: "1.5px dashed var(--pg-border)", borderRadius: 14,
-              padding: "36px 24px", textAlign: "center", color: var(--pg-muted), fontSize: 13,
+              background: "var(--pg-card)", border: "1.5px dashed var(--pg-border)", borderRadius: 14,
+              padding: "36px 24px", textAlign: "center", color: "var(--pg-muted)", fontSize: 13,
             }}>
               No optimized resumes yet —{" "}
               <Link href="/resumeoptimizer" style={{ color: "#3b5bdb", fontWeight: 600, textDecoration: "none" }}>generate one now</Link>.
@@ -951,7 +951,7 @@ const filtered = (() => {
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))", gap: 14 }}>
               {resumes.slice(0, 6).map((r) => (
                 <div key={r.id} style={{
-                  background: var(--pg-card), border: "1px solid var(--pg-border)", borderRadius: 14,
+                  background: "var(--pg-card)", border: "1px solid var(--pg-border)", borderRadius: 14,
                   padding: "16px 18px", display: "flex", flexDirection: "column", gap: 10,
                 }}>
                   <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 8 }}>
@@ -959,7 +959,7 @@ const filtered = (() => {
                       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#3b5bdb" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
                         <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/>
                       </svg>
-                      <span style={{ fontSize: 13, fontWeight: 600, color: var(--pg-text), overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                      <span style={{ fontSize: 13, fontWeight: 600, color: "var(--pg-text)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                         {r.originalFileName || "resume"}
                       </span>
                     </div>
@@ -968,13 +968,13 @@ const filtered = (() => {
                       borderRadius: 20, background: "#e7f5ff", color: "#1971c2",
                     }}>{r.templateName ?? "classic"}</span>
                   </div>
-                  <p style={{ fontSize: 12, color: var(--pg-muted), lineHeight: 1.5, margin: 0,
+                  <p style={{ fontSize: 12, color: "var(--pg-muted)", lineHeight: 1.5, margin: 0,
                     display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" as const, overflow: "hidden",
                   }}>
                     {r.jobDescriptionSnippet || "No job description."}
                   </p>
                   <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", borderTop: "1px solid var(--pg-border)", paddingTop: 10, marginTop: "auto" }}>
-                    <span style={{ fontSize: 11, color: var(--pg-muted) }}>
+                    <span style={{ fontSize: 11, color: "var(--pg-muted)" }}>
                       {new Date(r.createdAt).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })}
                     </span>
                     <div style={{ display: "flex", gap: 8 }}>
@@ -1054,10 +1054,10 @@ const filtered = (() => {
           }}
         >
           <div style={{
-            background: var(--pg-card), borderRadius: 16, padding: 28, width: 440, maxWidth: "90vw",
+            background: "var(--pg-card)", borderRadius: 16, padding: 28, width: 440, maxWidth: "90vw",
             boxShadow: "0 20px 60px rgba(0,0,0,0.15)",
           }}>
-            <div style={{ fontSize: 17, fontWeight: 700, marginBottom: 20, color: var(--pg-text) }}>Log New Application</div>
+            <div style={{ fontSize: 17, fontWeight: 700, marginBottom: 20, color: "var(--pg-text)" }}>Log New Application</div>
 
             {addError && (
               <div style={{ background: "#fff5f5", border: "1px solid #ffd0d0", borderRadius: 8, padding: "10px 14px", fontSize: 13, color: "#c92a2a", marginBottom: 16 }}>
@@ -1073,7 +1073,7 @@ const filtered = (() => {
                 { label: "Applied Date", key: "appliedDate", placeholder: "", type: "date" },
               ].map(field => (
                 <div key={field.key}>
-                  <label style={{ display: "block", fontSize: 12, fontWeight: 600, color: var(--pg-label), marginBottom: 6 }}>{field.label}</label>
+                  <label style={{ display: "block", fontSize: 12, fontWeight: 600, color: "var(--pg-label)", marginBottom: 6 }}>{field.label}</label>
                   <input
                     type={field.type}
                     placeholder={field.placeholder}
@@ -1085,7 +1085,7 @@ max={field.type === "date" ? "2099-12-31" : undefined}
                     style={{
                       width: "100%", padding: "10px 14px", fontSize: 13, border: "1.5px solid var(--pg-border)",
                       borderRadius: 8, outline: "none", fontFamily: "inherit", boxSizing: "border-box",
-                      background: var(--pg-input), color: var(--pg-text),
+                      background: "var(--pg-input)", color: "var(--pg-text)",
                     }}
                   />
                 </div>
@@ -1095,7 +1095,7 @@ max={field.type === "date" ? "2099-12-31" : undefined}
             <div style={{ display: "flex", gap: 10, marginTop: 22 }}>
               <button
                 onClick={() => { setShowAddModal(false); setAddError(""); setAddForm({ company: "", role: "", jobLink: "", appliedDate: "" }); }}
-                style={{ flex: 1, padding: "11px 0", background: var(--pg-chip), border: "none", borderRadius: 10, fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "inherit", color: var(--pg-text) }}
+                style={{ flex: 1, padding: "11px 0", background: "var(--pg-chip)", border: "none", borderRadius: 10, fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "inherit", color: "var(--pg-text)" }}
               >
                 Cancel
               </button>
@@ -1121,10 +1121,10 @@ max={field.type === "date" ? "2099-12-31" : undefined}
           }}
         >
           <div style={{
-            background: var(--pg-card), borderRadius: 16, padding: 28, width: 440, maxWidth: "90vw",
+            background: "var(--pg-card)", borderRadius: 16, padding: 28, width: 440, maxWidth: "90vw",
             boxShadow: "0 20px 60px rgba(0,0,0,0.15)",
           }}>
-            <div style={{ fontSize: 17, fontWeight: 700, marginBottom: 20, color: var(--pg-text) }}>Edit Application</div>
+            <div style={{ fontSize: 17, fontWeight: 700, marginBottom: 20, color: "var(--pg-text)" }}>Edit Application</div>
 
             {editError && (
               <div style={{ background: "#fff5f5", border: "1px solid #ffd0d0", borderRadius: 8, padding: "10px 14px", fontSize: 13, color: "#c92a2a", marginBottom: 16 }}>
@@ -1140,7 +1140,7 @@ max={field.type === "date" ? "2099-12-31" : undefined}
                 { label: "Applied Date", key: "appliedDate", placeholder: "", type: "date" },
               ].map(field => (
                 <div key={field.key}>
-                  <label style={{ display: "block", fontSize: 12, fontWeight: 600, color: var(--pg-label), marginBottom: 6 }}>{field.label}</label>
+                  <label style={{ display: "block", fontSize: 12, fontWeight: 600, color: "var(--pg-label)", marginBottom: 6 }}>{field.label}</label>
                   <input
                     type={field.type}
                     placeholder={field.placeholder}
@@ -1151,7 +1151,7 @@ max={field.type === "date" ? "2099-12-31" : undefined}
                     style={{
                       width: "100%", padding: "10px 14px", fontSize: 13, border: "1.5px solid var(--pg-border)",
                       borderRadius: 8, outline: "none", fontFamily: "inherit", boxSizing: "border-box",
-                      background: var(--pg-input), color: var(--pg-text),
+                      background: "var(--pg-input)", color: "var(--pg-text)",
                     }}
                   />
                 </div>
@@ -1161,7 +1161,7 @@ max={field.type === "date" ? "2099-12-31" : undefined}
             <div style={{ display: "flex", gap: 10, marginTop: 22 }}>
               <button
                 onClick={() => { setShowEditModal(false); setEditError(""); }}
-                style={{ flex: 1, padding: "11px 0", background: var(--pg-chip), border: "none", borderRadius: 10, fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "inherit", color: var(--pg-text) }}
+                style={{ flex: 1, padding: "11px 0", background: "var(--pg-chip)", border: "none", borderRadius: 10, fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "inherit", color: "var(--pg-text)" }}
               >
                 Cancel
               </button>
@@ -1187,11 +1187,11 @@ max={field.type === "date" ? "2099-12-31" : undefined}
           }}
         >
           <div style={{
-            background: var(--pg-card), borderRadius: 16, padding: 28, width: 400, maxWidth: "90vw",
+            background: "var(--pg-card)", borderRadius: 16, padding: 28, width: 400, maxWidth: "90vw",
             boxShadow: "0 20px 60px rgba(0,0,0,0.15)",
           }}>
-            <div style={{ fontSize: 17, fontWeight: 700, marginBottom: 6, color: var(--pg-text) }}>Update Status</div>
-            <div style={{ fontSize: 13, color: var(--pg-muted), marginBottom: 20 }}>
+            <div style={{ fontSize: 17, fontWeight: 700, marginBottom: 6, color: "var(--pg-text)" }}>Update Status</div>
+            <div style={{ fontSize: 13, color: "var(--pg-muted)", marginBottom: 20 }}>
               {statusApp.company} - {statusApp.position}
             </div>
 
@@ -1202,9 +1202,9 @@ max={field.type === "date" ? "2099-12-31" : undefined}
                   onClick={() => setNewStatus(status)}
                   style={{
                     padding: "12px 16px", borderRadius: 10, border: `2px solid ${newStatus === status ? FILTER_ACTIVE_COLORS[status] : "var(--pg-border)"}`,
-                    background: newStatus === status ? `${FILTER_ACTIVE_COLORS[status]}10` : var(--pg-input),
+                    background: newStatus === status ? `${FILTER_ACTIVE_COLORS[status]}10` : "var(--pg-input)",
                     cursor: "pointer", fontSize: 14, fontWeight: 600, textAlign: "left",
-                    color: newStatus === status ? FILTER_ACTIVE_COLORS[status] : var(--pg-text),
+                    color: newStatus === status ? FILTER_ACTIVE_COLORS[status] : "var(--pg-text)",
                     fontFamily: "inherit", display: "flex", alignItems: "center", gap: 10,
                   }}
                 >
@@ -1224,7 +1224,7 @@ max={field.type === "date" ? "2099-12-31" : undefined}
             <div style={{ display: "flex", gap: 10 }}>
               <button
                 onClick={() => setShowStatusModal(false)}
-                style={{ flex: 1, padding: "11px 0", background: var(--pg-chip), border: "none", borderRadius: 10, fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "inherit", color: var(--pg-text) }}
+                style={{ flex: 1, padding: "11px 0", background: "var(--pg-chip)", border: "none", borderRadius: 10, fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "inherit", color: "var(--pg-text)" }}
               >
                 Cancel
               </button>
@@ -1257,18 +1257,18 @@ max={field.type === "date" ? "2099-12-31" : undefined}
           }}
         >
           <div style={{
-            background: var(--pg-card), borderRadius: 16, padding: 28, width: 400, maxWidth: "90vw",
+            background: "var(--pg-card)", borderRadius: 16, padding: 28, width: 400, maxWidth: "90vw",
             boxShadow: "0 20px 60px rgba(0,0,0,0.15)",
           }}>
             <div style={{ fontSize: 17, fontWeight: 700, marginBottom: 6, color: "#e03131" }}>Delete Application?</div>
-            <div style={{ fontSize: 13, color: var(--pg-muted), marginBottom: 20, lineHeight: 1.5 }}>
+            <div style={{ fontSize: 13, color: "var(--pg-muted)", marginBottom: 20, lineHeight: 1.5 }}>
               Are you sure you want to delete your application to <strong>{deletingApp.company}</strong> for <strong>{deletingApp.position}</strong>? This action cannot be undone.
             </div>
 
             <div style={{ display: "flex", gap: 10 }}>
               <button
                 onClick={() => setShowDeleteModal(false)}
-                style={{ flex: 1, padding: "11px 0", background: var(--pg-chip), border: "none", borderRadius: 10, fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "inherit", color: var(--pg-text) }}
+                style={{ flex: 1, padding: "11px 0", background: "var(--pg-chip)", border: "none", borderRadius: 10, fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "inherit", color: "var(--pg-text)" }}
               >
                 Cancel
               </button>
