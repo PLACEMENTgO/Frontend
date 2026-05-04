@@ -424,13 +424,13 @@ export default function Navbar() {
                       {initials}
                     </div>
                     <div className="min-w-0">
-                      {user?.name && (
+                      {userEmail && (
                         <p className="text-sm font-semibold text-slate-900 dark:text-white truncate">
-                          {user.name}
+                          {userEmail}
                         </p>
                       )}
                       <p className="text-xs text-slate-500 dark:text-slate-400 truncate">
-                        {userEmail}
+                        {subStatus.isPremium ? "Pro Member" : "Free Plan"}
                       </p>
                     </div>
                     {subStatus.isPremium && (
