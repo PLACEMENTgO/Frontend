@@ -289,7 +289,7 @@ const PricingPage = () => {
             {
               title: "Legal",
               links: [
-                { label: "Privacy Policy", href: "mailto:support@placementgo.in" },
+                { label: "Privacy Policy", href: "/privacy-policy" },
                 { label: "Terms of Service", href: "mailto:support@placementgo.in" },
                 { label: "Security", href: "mailto:support@placementgo.in" }
               ],

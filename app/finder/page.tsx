@@ -187,7 +187,7 @@ export default function ReferralFinder() {
             © 2026 PlacementGO. All rights reserved.
           </p>
           <div className="flex gap-8 text-xs font-bold text-[var(--pg-muted)] uppercase tracking-widest">
-            <a href="mailto:support@placementgo.in" className="hover:text-blue-600 transition-colors">Privacy Policy</a>
+            <a href="/privacy-policy" className="hover:text-blue-600 transition-colors">Privacy Policy</a>
             <a href="mailto:support@placementgo.in" className="hover:text-blue-600 transition-colors">Terms of Service</a>
             <a href="mailto:support@placementgo.in" className="hover:text-blue-600 transition-colors">Help Center</a>
           </div>

@@ -340,11 +340,15 @@ export default function ReferralFinder() {
       }}>
         <span style={{ color: "var(--pg-muted)", fontSize: 13 }}>© 2026 PlacementGO. All rights reserved.</span>
         <div style={{ display: "flex", gap: 20 }}>
-          {["Privacy Policy", "Terms of Service", "Help Center"].map(link => (
-            <a key={link} href="mailto:support@placementgo.in" style={{ color: "var(--pg-muted)", fontSize: 13, textDecoration: "none" }}>
-              {link}
-            </a>
-          ))}
+          <a href="/privacy-policy" style={{ color: "var(--pg-muted)", fontSize: 13, textDecoration: "none" }}>
+            Privacy Policy
+          </a>
+          <a href="mailto:support@placementgo.in" style={{ color: "var(--pg-muted)", fontSize: 13, textDecoration: "none" }}>
+            Terms of Service
+          </a>
+          <a href="mailto:support@placementgo.in" style={{ color: "var(--pg-muted)", fontSize: 13, textDecoration: "none" }}>
+            Help Center
+          </a>
         </div>
       </footer>
 
