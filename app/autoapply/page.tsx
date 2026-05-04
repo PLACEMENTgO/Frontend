@@ -601,7 +601,7 @@ export default function AutoApplyPage() {
               <div>
                 <p className="text-sm font-bold text-slate-800 dark:text-white">Unlock unlimited Job Automation with PRO</p>
                 <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                  Get unlimited scans, AI match scoring, auto-apply &amp; real-time alerts — only ₹499/month
+                  Get unlimited scans, AI match scoring, auto-apply &amp; real-time alerts — only $19/month
                 </p>
               </div>
             </div>

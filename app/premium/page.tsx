@@ -203,7 +203,7 @@ export default function PlacementGoPage() {
                 onClick={() => setUpgradeOpen(true)}
                 className="auto-apply-btn text-white font-bold px-5 py-3 rounded-xl hover:opacity-90 transition-opacity text-sm whitespace-nowrap"
               >
-                ✨ Upgrade to PRO — ₹499/mo
+                ✨ Upgrade to PRO — $19/mo
               </button>
             )}
             <div className="flex items-center gap-3 bg-white border border-gray-200 rounded-xl px-4 py-3">
