@@ -117,9 +117,11 @@ export default function Navbar() {
         <div className="flex items-center justify-between px-4 sm:px-8 py-4 max-w-7xl mx-auto">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2 shrink-0">
-            <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-xl">P</span>
-            </div>
+            <img
+              src="/logo.png"
+              alt="PlacementGo"
+              className="h-10 w-10 border rounded-2xl"
+            />
             <span className="text-xl font-bold tracking-tight text-slate-900 dark:text-white">
               PlacementGo
             </span>
