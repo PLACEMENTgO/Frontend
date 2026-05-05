@@ -129,7 +129,7 @@ export default function UpgradeModal({ isOpen, onClose, onSuccess }: UpgradeModa
             <span className="text-yellow-400 text-xs font-bold tracking-widest uppercase">PRO Plan</span>
           </div>
           <div className="text-5xl font-bold text-white mb-1">
-            ₹499
+            $19
             <span className="text-xl font-normal text-gray-400">/mo</span>
           </div>
           <p className="text-gray-400 text-sm">Billed monthly · Cancel anytime</p>
@@ -163,7 +163,7 @@ export default function UpgradeModal({ isOpen, onClose, onSuccess }: UpgradeModa
             disabled={loading}
             className="w-full bg-gradient-to-r from-[#1A56FF] to-[#0038CC] text-white font-bold py-3.5 rounded-xl hover:opacity-90 transition-opacity disabled:opacity-60 text-base"
           >
-            {loading ? "Opening Payment..." : "✨ Upgrade to PRO — ₹499/mo"}
+            {loading ? "Opening Payment..." : "✨ Upgrade to PRO — $19/mo"}
           </button>
 
           <p className="text-center text-gray-400 text-xs mt-3">

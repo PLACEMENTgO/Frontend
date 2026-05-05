@@ -193,9 +193,9 @@ export default function RegisterPage() {
                 Terms of Service
               </span>{" "}
               and{" "}
-              <span className="text-blue-500 font-medium hover:underline cursor-pointer">
+              <a href="/privacy-policy" className="text-blue-500 font-medium hover:underline cursor-pointer">
                 Privacy Policy
-              </span>
+              </a>
             </label>
           </div>
 

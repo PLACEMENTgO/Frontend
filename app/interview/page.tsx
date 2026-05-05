@@ -428,7 +428,7 @@ export default function Home() {
               links={[
                 { label: "About Us", href: "/" },
                 { label: "Contact", href: "mailto:support@placementgo.in" },
-                { label: "Privacy Policy", href: "mailto:support@placementgo.in" },
+                { label: "Privacy Policy", href: "/privacy-policy" },
                 { label: "Terms", href: "mailto:support@placementgo.in" },
               ]}
             />

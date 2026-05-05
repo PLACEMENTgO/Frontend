@@ -203,7 +203,7 @@ export default function PlacementGoPage() {
                 onClick={() => setUpgradeOpen(true)}
                 className="auto-apply-btn text-white font-bold px-5 py-3 rounded-xl hover:opacity-90 transition-opacity text-sm whitespace-nowrap"
               >
-                ✨ Upgrade to PRO — ₹499/mo
+                ✨ Upgrade to PRO — $19/mo
               </button>
             )}
             <div className="flex items-center gap-3 bg-white border border-gray-200 rounded-xl px-4 py-3">
@@ -472,7 +472,7 @@ export default function PlacementGoPage() {
         <div className="max-w-7xl mx-auto px-8 py-4 flex items-center justify-between text-xs text-gray-400">
           <span>© 2024 PlacementGo. All rights reserved.</span>
           <div className="flex gap-6">
-            <a href="#" className="hover:text-gray-600 transition-colors">Privacy Policy</a>
+            <a href="/privacy-policy" className="hover:text-gray-600 transition-colors">Privacy Policy</a>
             <a href="#" className="hover:text-gray-600 transition-colors">Terms of Service</a>
             <a href="#" className="hover:text-gray-600 transition-colors">Contact Support</a>
           </div>
