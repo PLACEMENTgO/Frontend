@@ -691,20 +691,6 @@ export default function AutoApplyPage() {
         {activeTab === "config" && (
           <div className="max-w-xl">
             <ConfigPanel config={config} onSave={updateConfig} saving={savingConfig} resumes={resumes} />
-
-            {/* API key guidance */}
-            <div className="mt-4 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-xl p-4">
-              <h3 className="font-semibold text-amber-800 dark:text-amber-400 text-sm mb-2">
-                Optional: Connect Job APIs for More Results
-              </h3>
-              <ul className="text-xs text-amber-700 dark:text-amber-500 space-y-1 list-disc list-inside">
-                <li><strong>JSearch (RapidAPI)</strong> – Set env var <code>JSEARCH_API_KEY</code>. 
-                    Covers LinkedIn, Indeed, Glassdoor &amp; more.</li>
-                <li><strong>Adzuna</strong> – Set <code>ADZUNA_APP_ID</code> + <code>ADZUNA_APP_KEY</code>. 
-                    Free tier: 250 req/day.</li>
-                <li>Without keys, <strong>Remotive.com</strong> is used as a free fallback (remote jobs only).</li>
-              </ul>
-            </div>
           </div>
         )}
 
