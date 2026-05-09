@@ -9,6 +9,7 @@ import type { JobLeadDto, AutoApplyConfig, ApplicationTemplate } from "../../typ
 import type { ResumeSummary } from "../../types/resume.types";
 import { getJobLead } from "../../services/autoapply.service";
 import UpgradeModal, { useSubscription } from "../component/UpgradeModal";
+import Navbar from "../component/Navbar";
 
 // ── helpers ───────────────────────────────────────────────────────────────────
 
@@ -509,8 +510,10 @@ export default function AutoApplyPage() {
   const hasResume = resumes.length > 0;
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950">
-      <div className="max-w-6xl mx-auto px-4 py-8">
+    <>
+      <Navbar />
+      <div className="min-h-screen bg-slate-50 dark:bg-slate-950">
+        <div className="max-w-6xl mx-auto px-4 py-8">
 
         {/* Page header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
@@ -784,6 +787,7 @@ export default function AutoApplyPage() {
         onClose={() => setShowUpgradeModal(false)}
         onSuccess={() => { refreshSub(); setShowUpgradeModal(false); }}
       />
-    </div>
+      </div>
+    </>
   );
 }
